@@ -7,8 +7,8 @@ import {
   SafeAreaView,
   Dimensions,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
+import FaceIcon, { FaceType } from '../../components/ui/FaceIcon';
 
 const { width } = Dimensions.get('window');
 
@@ -22,32 +22,12 @@ const BTN_DISABLED_BG = '#E5E7EB';
 const BTN_DISABLED_TEXT = '#9CA3AF';
 
 // 感情スタンプ - 画像の5段階
-const MOODS = [
-  {
-    emoji: '😢',
-    label: 'とても辛い',
-    gradientColors: ['#9B7FE8', '#7C3AED'] as [string, string],
-  },
-  {
-    emoji: '😔',
-    label: '辛い',
-    gradientColors: ['#7EB8F0', '#4A90D9'] as [string, string],
-  },
-  {
-    emoji: '😐',
-    label: 'ふつう',
-    gradientColors: ['#5DD8C0', '#1BAE94'] as [string, string],
-  },
-  {
-    emoji: '🙂',
-    label: 'よい',
-    gradientColors: ['#8DE08A', '#3FB83C'] as [string, string],
-  },
-  {
-    emoji: '😄',
-    label: 'とても良い',
-    gradientColors: ['#F5D04A', '#F0A020'] as [string, string],
-  },
+const MOODS: { faceType: FaceType; label: string }[] = [
+  { faceType: 1, label: 'とても辛い' },
+  { faceType: 2, label: '辛い' },
+  { faceType: 3, label: 'ふつう' },
+  { faceType: 4, label: 'よい' },
+  { faceType: 5, label: 'とても良い' },
 ];
 
 const MOOD_CIRCLE_SIZE = (width - 48 - 48) / 5; // 全幅 - 左右padding - 間隔
@@ -81,18 +61,16 @@ export default function HomeScreen() {
                 key={i}
                 onPress={() => setSelectedMood(i)}
                 activeOpacity={0.8}
+                style={[
+                  styles.moodItem,
+                  selectedMood === i && styles.moodItemSelected,
+                ]}
               >
-                <LinearGradient
-                  colors={mood.gradientColors}
-                  style={[
-                    styles.moodCircle,
-                    selectedMood === i && styles.moodCircleSelected,
-                  ]}
-                  start={{ x: 0.3, y: 0 }}
-                  end={{ x: 0.7, y: 1 }}
-                >
-                  <Text style={styles.moodEmoji}>{mood.emoji}</Text>
-                </LinearGradient>
+                <FaceIcon
+                  type={mood.faceType}
+                  active={selectedMood === null || selectedMood === i}
+                  size={MOOD_CIRCLE_SIZE}
+                />
               </TouchableOpacity>
             ))}
           </View>
@@ -199,23 +177,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 20,
   },
-  moodCircle: {
-    width: MOOD_CIRCLE_SIZE,
-    height: MOOD_CIRCLE_SIZE,
+  moodItem: {
     borderRadius: MOOD_CIRCLE_SIZE / 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  moodCircleSelected: {
-    transform: [{ scale: 1.1 }],
+  moodItemSelected: {
+    transform: [{ scale: 1.12 }],
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 6,
-  },
-  moodEmoji: {
-    fontSize: MOOD_CIRCLE_SIZE * 0.5,
   },
 
   // 記録するボタン
