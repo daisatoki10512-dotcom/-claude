@@ -15,13 +15,43 @@ const C = {
   border:        { r: 0.898, g: 0.910, b: 0.922, a: 1 },
   tagBg:         { r: 0.953, g: 0.957, b: 0.965, a: 1 },
   tagText:       { r: 0.216, g: 0.255, b: 0.318, a: 1 },
-  moodPurple:    { r: 0.608, g: 0.498, b: 0.910, a: 1 },
-  moodBlue:      { r: 0.494, g: 0.722, b: 0.941, a: 1 },
-  moodGreen:     { r: 0.365, g: 0.847, b: 0.753, a: 1 },
-  moodLightGreen:{ r: 0.553, g: 0.878, b: 0.541, a: 1 },
-  moodYellow:    { r: 0.961, g: 0.816, b: 0.290, a: 1 },
   white:         { r: 1,     g: 1,     b: 1,     a: 1 },
 };
+
+// ── ムード定義（添付画像に合わせた色・表情） ──────────────────
+// 順序: crying(紫) → sad(青) → neutral(シアン) → happy(緑) → happy-big(黄)
+const MOODS = [
+  {
+    key: 'crying',
+    center: { r: 0.80, g: 0.68, b: 1.00, a: 1 },  // ライトラベンダー
+    edge:   { r: 0.56, g: 0.36, b: 0.94, a: 1 },  // ミディアムパープル
+    face:   { r: 0.33, g: 0.07, b: 0.55, a: 1 },  // ダークパープル
+  },
+  {
+    key: 'sad',
+    center: { r: 0.62, g: 0.80, b: 1.00, a: 1 },  // ライトブルー
+    edge:   { r: 0.28, g: 0.55, b: 0.94, a: 1 },  // ミディアムブルー
+    face:   { r: 0.08, g: 0.20, b: 0.62, a: 1 },  // ダークネイビー
+  },
+  {
+    key: 'neutral',
+    center: { r: 0.62, g: 0.98, b: 0.91, a: 1 },  // ライトシアン
+    edge:   { r: 0.18, g: 0.84, b: 0.72, a: 1 },  // ミディアムティール
+    face:   { r: 0.02, g: 0.40, b: 0.36, a: 1 },  // ダークティール
+  },
+  {
+    key: 'happy',
+    center: { r: 0.80, g: 1.00, b: 0.52, a: 1 },  // ライムグリーン
+    edge:   { r: 0.48, g: 0.86, b: 0.24, a: 1 },  // ミディアムグリーン
+    face:   { r: 0.04, g: 0.36, b: 0.04, a: 1 },  // ダークグリーン
+  },
+  {
+    key: 'happy-big',
+    center: { r: 1.00, g: 0.97, b: 0.68, a: 1 },  // ライトイエロー
+    edge:   { r: 0.98, g: 0.78, b: 0.16, a: 1 },  // アンバーイエロー
+    face:   { r: 0.72, g: 0.13, b: 0.08, a: 1 },  // ダークレッド
+  },
+];
 
 const FRAME_W = 390, FRAME_H = 844, TAB_H = 83, PAD = 20, RADIUS = 16;
 
@@ -67,16 +97,6 @@ async function mkText(str, x, y, size, color, weight = 'Regular', maxW = null) {
   return t;
 }
 
-function linearGrad(stops, angle = 'lr') {
-  // angle 'lr' = left to right, 'tb' = top to bottom
-  const tf = angle === 'tb' ? [[1, 0, 0], [0, 1, 0]] : [[0, 1, 0], [-1, 0, 1]];
-  return { type: 'GRADIENT_LINEAR', gradientTransform: tf, gradientStops: stops };
-}
-
-function gradFill(left, right) {
-  return [linearGrad([{ position: 0, color: left }, { position: 1, color: right }])];
-}
-
 function dropShadow(node) {
   node.effects = [{
     type: 'DROP_SHADOW',
@@ -84,6 +104,131 @@ function dropShadow(node) {
     offset: { x: 0, y: 2 }, radius: 8, spread: 0,
     visible: true, blendMode: 'NORMAL',
   }];
+}
+
+// ── グラデーション ─────────────────────────────────────────────
+function radialGradFill(center, edge) {
+  // GRADIENT_RADIAL: transform で中心(0.5,0.5)・半径0.5 のラジアル
+  return [{
+    type: 'GRADIENT_RADIAL',
+    gradientTransform: [[0.5, 0, 0.5], [0, 0.5, 0.5]],
+    gradientStops: [
+      { position: 0, color: center },
+      { position: 1, color: edge },
+    ],
+  }];
+}
+
+function linearGradFill(left, right) {
+  return [{
+    type: 'GRADIENT_LINEAR',
+    gradientTransform: [[0, 1, 0], [-1, 0, 1]],
+    gradientStops: [
+      { position: 0, color: left },
+      { position: 1, color: right },
+    ],
+  }];
+}
+
+// ── 顔パーツ描画ヘルパー ──────────────────────────────────────
+function addEllipse(parent, cx, cy, w, h, fill) {
+  const e = figma.createEllipse();
+  e.resize(w, h);
+  e.x = cx - w / 2;
+  e.y = cy - h / 2;
+  e.fills = [{ type: 'SOLID', color: fill }];
+  parent.appendChild(e);
+  return e;
+}
+
+function addVec(parent, pathData, strokeColor, strokeW, fillColor = null) {
+  const v = figma.createVector();
+  v.vectorPaths = [{
+    windingRule: fillColor ? 'EVENODD' : 'NONE',
+    data: pathData,
+  }];
+  v.fills   = fillColor   ? [{ type: 'SOLID', color: fillColor }]   : [];
+  v.strokes = strokeColor ? [{ type: 'SOLID', color: strokeColor }] : [];
+  v.strokeWeight = strokeW;
+  v.strokeCap    = 'ROUND';
+  v.strokeJoin   = 'ROUND';
+  parent.appendChild(v);
+  return v;
+}
+
+// ── 顔を描画（ベクター）────────────────────────────────────────
+// key: 'crying' | 'sad' | 'neutral' | 'happy' | 'happy-big'
+// sz : 円の直径（ピクセル）
+function drawFace(parent, key, sz, faceColor) {
+  const sw   = Math.max(1.5, sz * 0.065);  // ストローク太さ
+  const eyeD = Math.max(3,   sz * 0.095);  // 目ドット径
+
+  // 目の座標
+  const eyeY  = sz * 0.40;
+  const eyeLx = sz * 0.33;
+  const eyeRx = sz * 0.67;
+
+  // 口の座標
+  const mCx  = sz * 0.50;
+  const mY   = sz * 0.63;
+  const mHW  = sz * 0.21;  // 半幅
+
+  if (key === 'happy-big') {
+    // ── 閉じた目（上向き弧）──────────────────────────
+    const eyeHW  = sz * 0.085;
+    const eyeArc = sz * 0.065;
+    for (const ex of [eyeLx, eyeRx]) {
+      addVec(parent,
+        `M ${ex - eyeHW} ${eyeY} Q ${ex} ${eyeY - eyeArc} ${ex + eyeHW} ${eyeY}`,
+        faceColor, sw);
+    }
+    // ── 大きな笑顔 ───────────────────────────────────
+    addVec(parent,
+      `M ${mCx - mHW} ${mY} Q ${mCx} ${mY + sz * 0.14} ${mCx + mHW} ${mY}`,
+      faceColor, sw * 1.2);
+
+  } else {
+    // ── 丸い目（ドット）──────────────────────────────
+    addEllipse(parent, eyeLx, eyeY, eyeD, eyeD, faceColor);
+    addEllipse(parent, eyeRx, eyeY, eyeD, eyeD, faceColor);
+
+    // ── 口 ───────────────────────────────────────────
+    const arcH = {
+      crying:  -sz * 0.10,   // 下向き弧（悲しみ）
+      sad:     -sz * 0.07,   // 軽い下向き弧
+      neutral:  0,            // 水平線
+      happy:    sz * 0.09,   // 上向き弧（微笑み）
+    }[key] || 0;
+
+    if (arcH === 0) {
+      addVec(parent,
+        `M ${mCx - mHW} ${mY} L ${mCx + mHW} ${mY}`,
+        faceColor, sw);
+    } else {
+      addVec(parent,
+        `M ${mCx - mHW} ${mY} Q ${mCx} ${mY + arcH} ${mCx + mHW} ${mY}`,
+        faceColor, sw);
+    }
+
+    // ── 涙（crying のみ）────────────────────────────
+    if (key === 'crying') {
+      const tw = eyeD * 0.55;
+      const th = eyeD * 0.85;
+      // 左目の下
+      addEllipse(parent, eyeLx + eyeD * 0.2, eyeY + eyeD * 1.35, tw, th, faceColor);
+      // 右目の下
+      addEllipse(parent, eyeRx + eyeD * 0.2, eyeY + eyeD * 1.35, tw, th, faceColor);
+    }
+  }
+}
+
+// ── ムード円（ラジアルグラデ + ベクター顔）────────────────────
+function mkMoodCircle(moodKey, center, edge, faceColor, x, y, sz) {
+  const c = mkFrame(`mood-${moodKey}`, x, y, sz, sz, center);
+  c.cornerRadius = sz / 2;
+  c.fills = radialGradFill(center, edge);
+  drawFace(c, moodKey, sz, faceColor);
+  return c;
 }
 
 // ── タグ列 ────────────────────────────────────────────────────
@@ -100,25 +245,17 @@ async function addTags(parent, tags, x, y) {
   }
 }
 
-// ── ムード円 ──────────────────────────────────────────────────
-function mkMoodCircle(emoji, left, right, x, y, size) {
-  const c = mkFrame(`mood-${emoji}`, x, y, size, size, left);
-  c.cornerRadius = size / 2;
-  c.fills = gradFill(left, right);
-  return c;
-}
-
 // ── タブバー ──────────────────────────────────────────────────
 async function addTabBar(parent, active) {
   const bar = mkFrame('TabBar', 0, FRAME_H - TAB_H, FRAME_W, TAB_H, C.white);
   bar.appendChild(mkRect('border-top', 0, 0, FRAME_W, 1, C.border));
 
   const tabs = [
-    { icon: '⌂',  label: 'ホーム',    idx: 0 },
-    { icon: '💡', label: '気づき',    idx: 1 },
+    { icon: '⌂',  label: 'ホーム',      idx: 0 },
+    { icon: '💡', label: '気づき',      idx: 1 },
     { icon: '🔖', label: 'ブックマーク', idx: 2 },
-    { icon: '📄', label: '記録',      idx: 3 },
-    { icon: '👤', label: 'マイページ', idx: 4 },
+    { icon: '📄', label: '記録',        idx: 3 },
+    { icon: '👤', label: 'マイページ',  idx: 4 },
   ];
   const tw = FRAME_W / tabs.length;
 
@@ -158,17 +295,12 @@ async function buildHome(ox) {
   const mc = mkFrame('MoodCard', PAD, y, FRAME_W - PAD * 2, 148, C.white);
   mc.cornerRadius = RADIUS; dropShadow(mc); s.appendChild(mc);
 
-  const moods = [
-    { e: '😢', l: C.moodPurple,     r: { r: 0.486, g: 0.227, b: 0.929, a: 1 } },
-    { e: '😔', l: C.moodBlue,       r: { r: 0.290, g: 0.565, b: 0.851, a: 1 } },
-    { e: '😐', l: C.moodGreen,      r: { r: 0.106, g: 0.682, b: 0.580, a: 1 } },
-    { e: '🙂', l: C.moodLightGreen, r: { r: 0.247, g: 0.722, b: 0.235, a: 1 } },
-    { e: '😄', l: C.moodYellow,     r: { r: 0.941, g: 0.627, b: 0.125, a: 1 } },
-  ];
-  const sz = 52, innerW = FRAME_W - PAD * 2 - 40;
-  const gap = (innerW - sz * moods.length) / (moods.length - 1);
-  moods.forEach((m, i) => {
-    const c = mkMoodCircle(m.e, m.l, m.r, 20 + i * (sz + gap), 20, sz);
+  const sz = 52;
+  const innerW = FRAME_W - PAD * 2 - 40;
+  const gap    = (innerW - sz * MOODS.length) / (MOODS.length - 1);
+
+  MOODS.forEach((m, i) => {
+    const c = mkMoodCircle(m.key, m.center, m.edge, m.face, 20 + i * (sz + gap), 20, sz);
     mc.appendChild(c);
   });
 
@@ -186,8 +318,7 @@ async function buildHome(ox) {
   const rc = mkFrame('ReviewCard', PAD, y, FRAME_W - PAD * 2, 260, C.white);
   rc.cornerRadius = RADIUS; dropShadow(rc); s.appendChild(rc);
 
-  const illArea = mkFrame('Illustration', 0, 0, FRAME_W - PAD * 2, 160, { r: 0.973, g: 0.980, b: 0.976, a: 1 });
-  rc.appendChild(illArea);
+  rc.appendChild(mkFrame('Illustration', 0, 0, FRAME_W - PAD * 2, 160, { r: 0.973, g: 0.980, b: 0.976, a: 1 }));
   rc.appendChild(await mkText('🌱  💧', (FRAME_W - PAD * 2) / 2 - 44, 52, 52, C.textPrimary));
   rc.appendChild(await mkText('自己理解を深めましょう！', 20, 172, 18, C.textPrimary, 'Bold', FRAME_W - PAD * 2 - 40));
   rc.appendChild(await mkText('記録を続けていくと同時に、あなたの自己理解につながるコンテンツ...', 20, 200, 13, C.textSecondary, 'Regular', FRAME_W - PAD * 2 - 40));
@@ -203,7 +334,6 @@ async function buildRecords(ox) {
   const s = mkFrame('記録', ox, 0, FRAME_W, FRAME_H, C.bg);
   figma.currentPage.appendChild(s);
 
-  // ヘッダー
   const hdr = mkFrame('Header', 0, 44, FRAME_W, 52, C.bg);
   s.appendChild(hdr);
   const htitle = await mkText('記録', 0, 14, 16, C.textPrimary, 'SemiBold');
@@ -213,31 +343,28 @@ async function buildRecords(ox) {
 
   let y = 104;
 
-  // タブ切り替え
-  const sw = mkFrame('TabSwitch', PAD, y, FRAME_W - PAD * 2, 44, C.disabled);
-  sw.cornerRadius = 22; s.appendChild(sw);
+  const sw2 = mkFrame('TabSwitch', PAD, y, FRAME_W - PAD * 2, 44, C.disabled);
+  sw2.cornerRadius = 22; s.appendChild(sw2);
   const activeTab = mkRect('ActiveTab', 4, 4, (FRAME_W - PAD * 2) / 2 - 8, 36, C.white, 18);
-  dropShadow(activeTab); sw.appendChild(activeTab);
+  dropShadow(activeTab); sw2.appendChild(activeTab);
   const tl1 = await mkText('リスト', 0, 10, 13, C.textPrimary, 'SemiBold');
   tl1.x = ((FRAME_W - PAD * 2) / 2 - tl1.width) / 2;
-  sw.appendChild(tl1);
+  sw2.appendChild(tl1);
   const tl2 = await mkText('カレンダー', 0, 10, 13, C.textSecondary);
   tl2.x = (FRAME_W - PAD * 2) / 2 + ((FRAME_W - PAD * 2) / 2 - tl2.width) / 2;
-  sw.appendChild(tl2);
+  sw2.appendChild(tl2);
   y += 60;
 
-  // 記録カード1
+  // 記録カード1 (sad = 青)
   s.appendChild(await mkText('11/9（土）', PAD, y, 15, C.textPrimary, 'Bold'));
   y += 26;
 
   const c1 = mkFrame('RecordCard1', PAD, y, FRAME_W - PAD * 2, 200, C.white);
   c1.cornerRadius = RADIUS; dropShadow(c1); s.appendChild(c1);
 
-  const mc1 = mkFrame('mood', 16, 16, 44, 44, C.moodBlue);
-  mc1.cornerRadius = 22;
-  mc1.fills = gradFill(C.moodBlue, { r: 0.290, g: 0.565, b: 0.851, a: 1 });
+  const sadMood = MOODS.find(m => m.key === 'sad');
+  const mc1 = mkMoodCircle('sad', sadMood.center, sadMood.edge, sadMood.face, 16, 16, 44);
   c1.appendChild(mc1);
-  mc1.appendChild(await mkText('😔', 8, 9, 22, C.white));
 
   c1.appendChild(await mkText('相談したいのに、予定を合わせてもらえなかった', 70, 16, 14, C.textPrimary, 'Bold', FRAME_W - PAD * 2 - 110));
   c1.appendChild(await mkText('🔖', FRAME_W - PAD * 2 - 32, 16, 18, C.disabledText));
@@ -250,18 +377,16 @@ async function buildRecords(ox) {
   await addTags(c1, ['不安', 'がっかり', '後悔', '職場関係'], 16, 162);
   y += 216;
 
-  // 記録カード2
+  // 記録カード2 (neutral = シアン)
   s.appendChild(await mkText('11/8（金）', PAD, y, 15, C.textPrimary, 'Bold'));
   y += 26;
 
   const c2 = mkFrame('RecordCard2', PAD, y, FRAME_W - PAD * 2, 150, C.white);
   c2.cornerRadius = RADIUS; dropShadow(c2); s.appendChild(c2);
 
-  const mc2 = mkFrame('mood', 16, 16, 44, 44, C.moodGreen);
-  mc2.cornerRadius = 22;
-  mc2.fills = gradFill(C.moodGreen, { r: 0.106, g: 0.682, b: 0.580, a: 1 });
+  const neutralMood = MOODS.find(m => m.key === 'neutral');
+  const mc2 = mkMoodCircle('neutral', neutralMood.center, neutralMood.edge, neutralMood.face, 16, 16, 44);
   c2.appendChild(mc2);
-  mc2.appendChild(await mkText('😐', 8, 9, 22, C.white));
 
   c2.appendChild(await mkText('職場での頼まれごとに戸惑いを覚えた', 70, 16, 14, C.textPrimary, 'Bold', FRAME_W - PAD * 2 - 90));
   c2.appendChild(await mkText('相手の意図が読み取れず、戸惑いが残ったようですね。本当はもっと明確な役割や期待を知りたかったから...', 16, 68, 12, C.textSecondary, 'Regular', FRAME_W - PAD * 2 - 32));
@@ -284,7 +409,6 @@ async function buildInsights(ox) {
   s.appendChild(await mkText('新しい気づき', PAD, y, 16, C.textPrimary, 'Bold'));
   y += 28;
 
-  // 新しい気づきカード x2
   const newCards = [
     { title: '他人と比較するのは禁物', desc: '他人と比較していると気分が落ち込んでいます。', emoji: '⚠️', bg: { r: 0.831, g: 0.537, b: 0.478, a: 1 }, textC: { r: 1, g: 0.9, b: 0.9, a: 1 } },
     { title: '小さな一歩を大切に',     desc: '毎日の積み重ねが大きな変化につながります。',     emoji: '🌿', bg: { r: 0.490, g: 0.722, b: 0.604, a: 1 }, textC: { r: 0.9, g: 1, b: 0.95, a: 1 } },
@@ -302,9 +426,9 @@ async function buildInsights(ox) {
   y += 28;
 
   const past = [
-    { icon: '✨', bg: { r: 0.698, g: 0.910, b: 0.878, a: 1 }, title: '事前準備は心の余裕に',  desc: '予定を見通せると、不安が和らぐ傾向があります。',   date: '2025/9/21' },
-    { icon: '💡', bg: { r: 0.992, g: 0.910, b: 0.753, a: 1 }, title: '感情を言葉にする力',    desc: '感情を言語化することで自己理解が深まります。',     date: '2025/9/14' },
-    { icon: '🌙', bg: { r: 0.878, g: 0.878, b: 0.969, a: 1 }, title: '睡眠と気分の深い関係',  desc: '休息が十分だと、感情の波が穏やかになります。',     date: '2025/9/7'  },
+    { icon: '✨', bg: { r: 0.698, g: 0.910, b: 0.878, a: 1 }, title: '事前準備は心の余裕に',  desc: '予定を見通せると、不安が和らぐ傾向があります。', date: '2025/9/21' },
+    { icon: '💡', bg: { r: 0.992, g: 0.910, b: 0.753, a: 1 }, title: '感情を言葉にする力',    desc: '感情を言語化することで自己理解が深まります。',   date: '2025/9/14' },
+    { icon: '🌙', bg: { r: 0.878, g: 0.878, b: 0.969, a: 1 }, title: '睡眠と気分の深い関係',  desc: '休息が十分だと、感情の波が穏やかになります。',   date: '2025/9/7'  },
   ];
   for (const pi of past) {
     const pc = mkFrame(`Past-${pi.title}`, PAD, y, FRAME_W - PAD * 2, 88, C.white);
@@ -369,7 +493,7 @@ async function buildMyPage(ox) {
     const col = i % 2, row = Math.floor(i / 2);
     const gf = mkFrame(`Grid-${gi.label}`, PAD + col * (gw + 12), y + row * (gw + 12), gw, gw, gi.l);
     gf.cornerRadius = RADIUS;
-    gf.fills = gradFill(gi.l, gi.r);
+    gf.fills = linearGradFill(gi.l, gi.r);
     s.appendChild(gf);
 
     const em = await mkText(gi.emoji, 0, 0, 36, C.white);
@@ -391,24 +515,22 @@ async function buildMyPage(ox) {
   const chartCard = mkFrame('MoodChart', PAD, y, FRAME_W - PAD * 2, 120, C.white);
   chartCard.cornerRadius = RADIUS; dropShadow(chartCard); s.appendChild(chartCard);
 
-  const chartMoods = [
-    { e: '😄', l: C.moodYellow,     r: { r: 0.941, g: 0.627, b: 0.125, a: 1 } },
-    { e: '🙂', l: C.moodLightGreen, r: { r: 0.247, g: 0.722, b: 0.235, a: 1 } },
-    { e: '😐', l: C.moodGreen,      r: { r: 0.106, g: 0.682, b: 0.580, a: 1 } },
-    { e: '😔', l: C.moodBlue,       r: { r: 0.290, g: 0.565, b: 0.851, a: 1 } },
-    { e: '😄', l: C.moodYellow,     r: { r: 0.941, g: 0.627, b: 0.125, a: 1 } },
-    { e: '🙂', l: C.moodLightGreen, r: { r: 0.247, g: 0.722, b: 0.235, a: 1 } },
-    { e: '😢', l: C.moodPurple,     r: { r: 0.486, g: 0.227, b: 0.929, a: 1 } },
-  ];
+  // 曜日ごとのムードキーを指定
+  const chartMoodKeys = ['happy-big', 'happy', 'neutral', 'sad', 'happy-big', 'happy', 'crying'];
   const days = ['月', '火', '水', '木', '金', '土', '日'];
-  const csz = 32, cInnerW = FRAME_W - PAD * 2 - 32;
+  const csz = 32;
+  const cInnerW = FRAME_W - PAD * 2 - 32;
   const cgap = (cInnerW - csz * 7) / 6;
-  for (const [i, cm] of chartMoods.entries()) {
+
+  for (const [i, moodKey] of chartMoodKeys.entries()) {
+    const m = MOODS.find(x => x.key === moodKey);
     const cx = 16 + i * (csz + cgap);
-    const cc = mkMoodCircle(cm.e, cm.l, cm.r, cx, 16, csz);
+    const cc = mkMoodCircle(moodKey, m.center, m.edge, m.face, cx, 16, csz);
     chartCard.appendChild(cc);
+
     const dl = await mkText(days[i], cx, 58, 10, C.textSecondary);
-    dl.resize(csz, dl.height); dl.textAlignHorizontal = 'CENTER';
+    dl.resize(csz, dl.height);
+    dl.textAlignHorizontal = 'CENTER';
     chartCard.appendChild(dl);
   }
 
@@ -423,10 +545,10 @@ async function buildMyPage(ox) {
   figma.currentPage.name = 'humu - App Screens';
   const GAP = 60;
   try {
-    const home    = await buildHome(0);
-    const records = await buildRecords((FRAME_W + GAP) * 1);
-    const insights= await buildInsights((FRAME_W + GAP) * 2);
-    const mypage  = await buildMyPage((FRAME_W + GAP) * 3);
+    const home     = await buildHome(0);
+    const records  = await buildRecords((FRAME_W + GAP) * 1);
+    const insights = await buildInsights((FRAME_W + GAP) * 2);
+    const mypage   = await buildMyPage((FRAME_W + GAP) * 3);
 
     figma.currentPage.selection = [home, records, insights, mypage];
     figma.viewport.scrollAndZoomIntoView([home, records, insights, mypage]);
