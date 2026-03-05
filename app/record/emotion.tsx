@@ -200,7 +200,7 @@ export default function EmotionScreen() {
           <TouchableOpacity
             disabled={!canNext}
             activeOpacity={0.85}
-            onPress={() => { /* TODO: 次のステップへ */ }}
+            onPress={() => router.push('/record/reason')}
             style={styles.nextBtnWrapper}
           >
             <LinearGradient
