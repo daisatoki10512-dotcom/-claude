@@ -7,7 +7,7 @@
 ## 🎨 デザイン・ビジュアルリファレンス
 開発にあたっては、以下のリソースを最優先で参照し、ビジュアルを忠実に再現してください。
 
-- **Figma デザインデータ:** [ここにFigmaのURLを貼り付けてください]
+- **Figma デザインデータ:** [https://www.figma.com/design/e7MAIvx0iNWShm9X7gXcPZ/%E3%82%BC%E3%83%AD%E3%81%8B%E3%82%89%E3%82%B5%E3%83%BC%E3%83%93%E3%82%B9?node-id=6241-35907&t=Gg8qPcfpXCPdxmuZ-1]
 - - **ホーム画面イメージ:** `docs/images/home_screen.png`
   - - **デザインの基本方針:**
     -     - 配色: パステルカラーを基調とした、温かみのあるグラデーション
