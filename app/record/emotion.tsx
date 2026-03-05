@@ -1,0 +1,375 @@
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  SafeAreaView,
+} from 'react-native';
+import { useState } from 'react';
+import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+
+// ── Colors ────────────────────────────────────────────
+const BG_TOP    = '#E5F5EF';
+const BG_BOT    = '#DDF0E8';
+const TEXT_PRI  = '#1A1A1A';
+const TEXT_SEC  = '#6B7280';
+const TEAL      = '#2AA090';
+const TEAL_DARK = '#1A7063';
+const CHIP_DEF_BG     = '#FFFFFF';
+const CHIP_DEF_BORDER = '#E5E7EB';
+const CHIP_SEL_BG     = '#FFFFFF';
+const CHIP_SEL_BORDER = TEAL;
+const CHIP_SEL_TEXT   = TEAL;
+
+// ── Data ──────────────────────────────────────────────
+const POSITIVE_EMOTIONS = [
+  '嬉しい', '楽しい', '幸せ', '面白い',
+  '穏やか', 'ワクワク', '誇り',
+  '感謝', '安心', '満足', '爽やか',
+];
+
+const NEGATIVE_EMOTIONS = [
+  '不安', '悲しい', '怒り', '緊張',
+  'イライラ', '憂鬱', '焦り', 'がっかり',
+  '罪悪感', '疲労', '孤独', '苦しい',
+  '虚しい', '不満', '恐怖', '辛い', '退屈',
+];
+
+const TOTAL_STEPS = 8;
+
+// ── Sub-components ────────────────────────────────────
+
+/** ステップインジケーター */
+function StepDots({ current, total }: { current: number; total: number }) {
+  return (
+    <View style={styles.dots}>
+      {Array.from({ length: total }).map((_, i) => (
+        <View
+          key={i}
+          style={[
+            styles.dot,
+            i === current - 1 ? styles.dotActive : styles.dotInactive,
+          ]}
+        />
+      ))}
+    </View>
+  );
+}
+
+/** 感情チップ */
+function EmotionChip({
+  label,
+  selected,
+  onPress,
+}: {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <TouchableOpacity
+      style={[styles.chip, selected ? styles.chipSelected : styles.chipDefault]}
+      onPress={onPress}
+      activeOpacity={0.75}
+    >
+      {selected && (
+        <Ionicons name="checkmark" size={14} color={CHIP_SEL_TEXT} style={styles.chipCheck} />
+      )}
+      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+}
+
+// ── Main Screen ───────────────────────────────────────
+export default function EmotionScreen() {
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [customInput, setCustomInput] = useState('');
+  const [customEmotions, setCustomEmotions] = useState<string[]>([]);
+
+  const toggle = (label: string) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(label)) next.delete(label);
+      else next.add(label);
+      return next;
+    });
+  };
+
+  const addCustom = () => {
+    const trimmed = customInput.trim();
+    if (!trimmed) return;
+    setCustomEmotions(prev => [...prev, trimmed]);
+    setSelected(prev => new Set(prev).add(trimmed));
+    setCustomInput('');
+  };
+
+  const canNext = selected.size > 0;
+
+  return (
+    <LinearGradient colors={[BG_TOP, BG_BOT]} style={styles.gradient}>
+      <SafeAreaView style={styles.safe}>
+
+        {/* ── ヘッダー ─────────────────────────────── */}
+        <View style={styles.header}>
+          <StepDots current={1} total={TOTAL_STEPS} />
+          <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
+            <Ionicons name="close" size={24} color={TEXT_PRI} />
+          </TouchableOpacity>
+        </View>
+
+        {/* ── スクロール領域 ────────────────────────── */}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* タイトル */}
+          <Text style={styles.title}>今どんな感情を{'\n'}抱いていますか？</Text>
+          <Text style={styles.subtitle}>当てはまるものをすべて選択しましょう。</Text>
+
+          {/* ポジティブ */}
+          <Text style={styles.categoryLabel}>ポジティブ</Text>
+          <View style={styles.chipRow}>
+            {POSITIVE_EMOTIONS.map(e => (
+              <EmotionChip
+                key={e}
+                label={e}
+                selected={selected.has(e)}
+                onPress={() => toggle(e)}
+              />
+            ))}
+          </View>
+
+          {/* ネガティブ */}
+          <Text style={styles.categoryLabel}>ネガティブ</Text>
+          <View style={styles.chipRow}>
+            {NEGATIVE_EMOTIONS.map(e => (
+              <EmotionChip
+                key={e}
+                label={e}
+                selected={selected.has(e)}
+                onPress={() => toggle(e)}
+              />
+            ))}
+          </View>
+
+          {/* カスタム感情 */}
+          {customEmotions.length > 0 && (
+            <>
+              <Text style={styles.categoryLabel}>作成した感情</Text>
+              <View style={styles.chipRow}>
+                {customEmotions.map(e => (
+                  <EmotionChip
+                    key={e}
+                    label={e}
+                    selected={selected.has(e)}
+                    onPress={() => toggle(e)}
+                  />
+                ))}
+              </View>
+            </>
+          )}
+
+          {/* 感情を作成する入力 */}
+          <View style={styles.inputRow}>
+            <TextInput
+              style={styles.input}
+              placeholder="新しく感情を作成する。"
+              placeholderTextColor={TEXT_SEC}
+              value={customInput}
+              onChangeText={setCustomInput}
+              onSubmitEditing={addCustom}
+              returnKeyType="done"
+            />
+            <TouchableOpacity style={styles.addBtn} onPress={addCustom} activeOpacity={0.8}>
+              <Ionicons name="add" size={22} color={TEXT_SEC} />
+            </TouchableOpacity>
+          </View>
+
+          <View style={{ height: 32 }} />
+        </ScrollView>
+
+        {/* ── 次へボタン ───────────────────────────── */}
+        <View style={styles.footer}>
+          <TouchableOpacity
+            disabled={!canNext}
+            activeOpacity={0.85}
+            onPress={() => { /* TODO: 次のステップへ */ }}
+            style={styles.nextBtnWrapper}
+          >
+            <LinearGradient
+              colors={canNext ? ['#1A7063', '#2AA090'] : ['#E5E7EB', '#E5E7EB']}
+              style={styles.nextBtn}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            >
+              <Text style={[styles.nextBtnText, !canNext && styles.nextBtnTextDisabled]}>
+                次へ
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+
+      </SafeAreaView>
+    </LinearGradient>
+  );
+}
+
+// ── Styles ────────────────────────────────────────────
+const styles = StyleSheet.create({
+  gradient: { flex: 1 },
+  safe:     { flex: 1 },
+
+  // Header
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  dots: {
+    flexDirection: 'row',
+    gap: 4,
+    flex: 1,
+  },
+  dot: {
+    height: 6,
+    borderRadius: 3,
+  },
+  dotActive: {
+    width: 24,
+    backgroundColor: TEAL,
+  },
+  dotInactive: {
+    width: 14,
+    backgroundColor: '#C5DDD8',
+  },
+
+  // Scroll
+  scroll: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+  },
+
+  // Title
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: TEXT_PRI,
+    lineHeight: 40,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: TEXT_SEC,
+    textAlign: 'center',
+    marginBottom: 28,
+  },
+
+  // Category
+  categoryLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: TEXT_PRI,
+    marginBottom: 12,
+    marginTop: 4,
+  },
+
+  // Chips
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 20,
+  },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 50,
+    borderWidth: 1.5,
+  },
+  chipDefault: {
+    backgroundColor: CHIP_DEF_BG,
+    borderColor: CHIP_DEF_BORDER,
+  },
+  chipSelected: {
+    backgroundColor: CHIP_SEL_BG,
+    borderColor: CHIP_SEL_BORDER,
+  },
+  chipCheck: {
+    marginRight: 4,
+  },
+  chipText: {
+    fontSize: 15,
+    color: TEXT_PRI,
+    fontWeight: '500',
+  },
+  chipTextSelected: {
+    color: CHIP_SEL_TEXT,
+    fontWeight: '600',
+  },
+
+  // Custom input
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginTop: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  input: {
+    flex: 1,
+    fontSize: 15,
+    color: TEXT_PRI,
+  },
+  addBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // Footer
+  footer: {
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    paddingTop: 8,
+  },
+  nextBtnWrapper: {
+    borderRadius: 50,
+    overflow: 'hidden',
+  },
+  nextBtn: {
+    paddingVertical: 18,
+    alignItems: 'center',
+    borderRadius: 50,
+  },
+  nextBtnText: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  nextBtnTextDisabled: {
+    color: '#9CA3AF',
+  },
+});

@@ -8,6 +8,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { useState } from 'react';
+import { router } from 'expo-router';
 import FaceIcon, { FaceType } from '../../components/ui/FaceIcon';
 
 const { width } = Dimensions.get('window');
@@ -83,6 +84,7 @@ export default function HomeScreen() {
             ]}
             disabled={selectedMood === null}
             activeOpacity={0.8}
+            onPress={() => router.push('/record/emotion')}
           >
             <Text
               style={[
