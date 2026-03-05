@@ -1,182 +1,300 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Sparkles,
   BookOpen,
   TrendingUp,
   ArrowRight,
-  Heart,
   MessageCircle,
+  Bell,
+  Settings,
+  ChevronRight,
 } from "lucide-react";
 
-const moodEmojis = [
-  { emoji: "😔", label: "落ち込み", color: "bg-blue-100 hover:bg-blue-200" },
-  { emoji: "😟", label: "不安", color: "bg-purple-100 hover:bg-purple-200" },
-  { emoji: "😤", label: "イライラ", color: "bg-red-100 hover:bg-red-200" },
-  { emoji: "😶", label: "モヤモヤ", color: "bg-gray-100 hover:bg-gray-200" },
-  { emoji: "😌", label: "穏やか", color: "bg-green-100 hover:bg-green-200" },
-  { emoji: "🥲", label: "複雑", color: "bg-yellow-100 hover:bg-yellow-200" },
+// 時間帯に応じた挨拶（サーバーサイドで固定表示、クライアントでは動的化を想定）
+function getGreeting() {
+  return "こんにちは";
+}
+
+const moodItems = [
+  {
+    emoji: "😊",
+    label: "うれしい",
+    bg: "bg-[#FFF3E0]",
+    border: "border-[#FFD8A8]",
+    hover: "hover:bg-[#FFE8C0]",
+    ring: "ring-[#FFBA5A]",
+  },
+  {
+    emoji: "😔",
+    label: "かなしい",
+    bg: "bg-[#EBF5FB]",
+    border: "border-[#B3D7F0]",
+    hover: "hover:bg-[#D6EAF8]",
+    ring: "ring-[#7BB8E0]",
+  },
+  {
+    emoji: "😤",
+    label: "イライラ",
+    bg: "bg-[#FDECEA]",
+    border: "border-[#F5B7B1]",
+    hover: "hover:bg-[#FADADD]",
+    ring: "ring-[#E8837C]",
+  },
+  {
+    emoji: "😰",
+    label: "不安",
+    bg: "bg-[#F3E8FD]",
+    border: "border-[#D7AEEF]",
+    hover: "hover:bg-[#E8D3F8]",
+    ring: "ring-[#B778E0]",
+  },
+  {
+    emoji: "😶",
+    label: "モヤモヤ",
+    bg: "bg-[#F0F0F0]",
+    border: "border-[#D0D0D0]",
+    hover: "hover:bg-[#E4E4E4]",
+    ring: "ring-[#AAAAAA]",
+  },
+  {
+    emoji: "😓",
+    label: "つかれた",
+    bg: "bg-[#E8F5F0]",
+    border: "border-[#A8D8C8]",
+    hover: "hover:bg-[#D0EDE4]",
+    ring: "ring-[#6DB8A0]",
+  },
+  {
+    emoji: "😌",
+    label: "おだやか",
+    bg: "bg-[#E8F8E8]",
+    border: "border-[#A8D8A8]",
+    hover: "hover:bg-[#D0EDD0]",
+    ring: "ring-[#6DB86D]",
+  },
+  {
+    emoji: "🥲",
+    label: "複雑",
+    bg: "bg-[#FEF9E7]",
+    border: "border-[#F9E79F]",
+    hover: "hover:bg-[#FCF3CF]",
+    ring: "ring-[#F4D03F]",
+  },
 ];
 
-const features = [
+const recentRecords = [
   {
-    icon: <MessageCircle className="h-6 w-6 text-violet-500" />,
-    title: "AI対話ジャーナリング",
-    description:
-      "AIが寄り添い、あなたのモヤモヤを一緒に解きほぐします。3〜5往復の対話で気持ちを整理。",
+    date: "3月4日",
+    mood: "😔",
+    title: "仕事のプレッシャーと向き合った日",
+    tags: ["仕事", "不安", "自己成長"],
+    color: "from-blue-50 to-indigo-50",
+    tagColor: "bg-blue-100 text-blue-600",
   },
   {
-    icon: <Sparkles className="h-6 w-6 text-amber-500" />,
-    title: "自己理解インサイト",
-    description:
-      "対話の後、AIがあなたの感情と価値観を分析。「新しい気づき」を言葉にして届けます。",
-  },
-  {
-    icon: <BookOpen className="h-6 w-6 text-teal-500" />,
-    title: "記録の資産化",
-    description:
-      "すべての対話がカード形式で保存。過去の自分を振り返り、成長を実感できます。",
-  },
-  {
-    icon: <TrendingUp className="h-6 w-6 text-rose-500" />,
-    title: "感情の傾向分析",
-    description:
-      "何度も記録することで、あなたの感情パターンが見えてきます。",
+    date: "3月2日",
+    mood: "😌",
+    title: "小さな達成感を積み重ねる大切さ",
+    tags: ["達成感", "自己肯定"],
+    color: "from-green-50 to-teal-50",
+    tagColor: "bg-green-100 text-green-600",
   },
 ];
 
 export default function Home() {
+  const greeting = getGreeting();
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-violet-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-[#FDF6FF] via-[#FFF8F0] to-[#F0F8FF]">
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 max-w-5xl mx-auto">
-        <div className="flex items-center gap-2">
-          <Heart className="h-6 w-6 text-violet-500 fill-violet-200" />
-          <span className="text-xl font-bold text-violet-800 tracking-wide">
-            ふむ
-          </span>
+      <header className="sticky top-0 z-10 bg-white/70 backdrop-blur-md border-b border-white/50 px-5 py-4">
+        <div className="flex items-center justify-between max-w-lg mx-auto">
+          {/* ロゴ + 挨拶 */}
+          <div>
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="text-2xl font-bold text-[#7C3AED] tracking-tight">
+                ふむ
+              </span>
+              <span className="text-xl">🌿</span>
+            </div>
+            <p className="text-xs text-gray-400 leading-none">
+              {greeting}、今日はどんな気持ち？
+            </p>
+          </div>
+          {/* アイコン群 */}
+          <div className="flex items-center gap-3">
+            <button className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
+              <Bell className="h-4 w-4 text-gray-500" />
+            </button>
+            <button className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
+              <Settings className="h-4 w-4 text-gray-500" />
+            </button>
+          </div>
         </div>
-        <nav className="flex gap-4">
-          <Button variant="ghost" size="sm" className="text-violet-700">
-            記録を見る
-          </Button>
-          <Button
-            size="sm"
-            className="bg-violet-600 hover:bg-violet-700 text-white"
-          >
-            はじめる
-          </Button>
-        </nav>
       </header>
 
-      {/* Hero Section */}
-      <section className="text-center px-6 pt-16 pb-12 max-w-3xl mx-auto">
-        <Badge className="mb-4 bg-violet-100 text-violet-700 border-violet-200 hover:bg-violet-100">
-          メンタルケアアプリ
-        </Badge>
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-6 leading-tight">
-          言語化できない
-          <span className="text-violet-600">モヤモヤ</span>を、<br />
-          自己理解の資産に。
-        </h1>
-        <p className="text-lg text-gray-500 mb-10 leading-relaxed">
-          「ふむ」は、AIとの対話を通じて、
-          <br className="hidden md:block" />
-          あなたの気持ちを整理し、新しい自分への気づきをお届けします。
-        </p>
+      <main className="max-w-lg mx-auto px-5 pb-20">
+        {/* 感情パレット セクション */}
+        <section className="pt-6 pb-2">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-bold text-gray-800">
+              いまの気持ちを選んでね
+            </h2>
+            <span className="text-xs text-gray-400">タップして話す</span>
+          </div>
 
-        {/* Mood Palette CTA */}
-        <div className="bg-white rounded-3xl shadow-sm border border-violet-100 p-8 mb-6">
-          <p className="text-sm font-medium text-gray-500 mb-5">
-            今のきもちを選んではじめましょう
-          </p>
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-6">
-            {moodEmojis.map((mood) => (
+          <div className="grid grid-cols-4 gap-3">
+            {moodItems.map((mood) => (
               <Link
                 key={mood.label}
                 href={`/journal?mood=${encodeURIComponent(mood.label)}`}
               >
                 <button
-                  className={`w-full aspect-square rounded-2xl flex flex-col items-center justify-center gap-1 transition-all duration-200 cursor-pointer ${mood.color} active:scale-95`}
+                  className={`
+                    w-full aspect-square rounded-[20px] flex flex-col items-center justify-center gap-1.5
+                    border ${mood.bg} ${mood.border} ${mood.hover}
+                    transition-all duration-200 active:scale-95 active:ring-2 ${mood.ring}
+                    shadow-sm hover:shadow-md
+                  `}
                 >
-                  <span className="text-3xl">{mood.emoji}</span>
-                  <span className="text-xs text-gray-600 font-medium">
+                  <span className="text-[28px] leading-none">{mood.emoji}</span>
+                  <span className="text-[10px] font-medium text-gray-600 leading-none">
                     {mood.label}
                   </span>
                 </button>
               </Link>
             ))}
           </div>
+        </section>
+
+        {/* 話す ボタン */}
+        <section className="py-5">
           <Button
             size="lg"
-            className="w-full bg-violet-600 hover:bg-violet-700 text-white rounded-xl py-6 text-base font-semibold"
+            className="
+              w-full rounded-[24px] py-7 text-base font-bold
+              bg-gradient-to-r from-[#7C3AED] to-[#A855F7]
+              hover:from-[#6D28D9] hover:to-[#9333EA]
+              text-white shadow-lg shadow-violet-200
+              transition-all duration-200 hover:shadow-xl hover:scale-[1.01] active:scale-[0.99]
+            "
             asChild
           >
-            <Link href="/journal" className="flex items-center gap-2">
-              今すぐ話す
+            <Link href="/journal" className="flex items-center justify-center gap-2">
+              <MessageCircle className="h-5 w-5" />
+              気持ちを話す
               <ArrowRight className="h-5 w-5" />
             </Link>
           </Button>
-        </div>
-        <p className="text-sm text-gray-400">登録不要でお試しいただけます</p>
-      </section>
+          <p className="text-center text-xs text-gray-400 mt-3">
+            AIが丁寧に聞いてくれます ✨
+          </p>
+        </section>
 
-      {/* Features Section */}
-      <section className="px-6 py-16 max-w-5xl mx-auto">
-        <h2 className="text-2xl font-bold text-center text-gray-700 mb-10">
-          「ふむ」でできること
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {features.map((feature) => (
-            <Card
-              key={feature.title}
-              className="border-0 shadow-sm bg-white/70 backdrop-blur-sm hover:shadow-md transition-shadow"
+        {/* 最近の記録 */}
+        <section className="py-2">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-bold text-gray-800">最近の記録</h2>
+            <Link
+              href="/records"
+              className="text-xs text-violet-600 flex items-center gap-0.5 hover:text-violet-800 transition-colors"
             >
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="p-2 rounded-xl bg-gray-50 shrink-0">
-                    {feature.icon}
+              すべて見る
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {recentRecords.map((record) => (
+              <Card
+                key={record.date}
+                className="border-0 shadow-sm hover:shadow-md transition-shadow rounded-[24px] overflow-hidden cursor-pointer"
+              >
+                <CardContent className="p-0">
+                  <div className={`bg-gradient-to-br ${record.color} p-5`}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-xl">{record.mood}</span>
+                          <span className="text-xs text-gray-400">
+                            {record.date}
+                          </span>
+                        </div>
+                        <p className="text-sm font-semibold text-gray-800 leading-snug mb-3 truncate">
+                          {record.title}
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {record.tags.map((tag) => (
+                            <span
+                              key={tag}
+                              className={`text-[10px] font-medium px-2.5 py-1 rounded-full ${record.tagColor}`}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <ChevronRight className="h-5 w-5 text-gray-300 mt-1 shrink-0" />
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-800 mb-1">
-                      {feature.title}
-                    </h3>
-                    <p className="text-sm text-gray-500 leading-relaxed">
-                      {feature.description}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* 統計ミニカード */}
+        <section className="py-5">
+          <h2 className="text-base font-bold text-gray-800 mb-4">
+            今月のきろく
+          </h2>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { icon: <BookOpen className="h-5 w-5 text-violet-500" />, value: "8", label: "記録数", bg: "bg-violet-50 border-violet-100" },
+              { icon: <Sparkles className="h-5 w-5 text-amber-500" />, value: "5", label: "気づき", bg: "bg-amber-50 border-amber-100" },
+              { icon: <TrendingUp className="h-5 w-5 text-teal-500" />, value: "3", label: "連続日数", bg: "bg-teal-50 border-teal-100" },
+            ].map((stat) => (
+              <Card
+                key={stat.label}
+                className={`border rounded-[20px] shadow-none ${stat.bg}`}
+              >
+                <CardContent className="p-4 flex flex-col items-center gap-1">
+                  {stat.icon}
+                  <p className="text-2xl font-bold text-gray-800 leading-none">
+                    {stat.value}
+                  </p>
+                  <p className="text-[10px] text-gray-500">{stat.label}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+      </main>
+
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-gray-100 px-6 py-3 safe-area-pb">
+        <div className="flex items-center justify-around max-w-lg mx-auto">
+          {[
+            { icon: <MessageCircle className="h-6 w-6" />, label: "話す", href: "/journal", active: false },
+            { icon: <BookOpen className="h-6 w-6" />, label: "記録", href: "/records", active: false },
+            { icon: <TrendingUp className="h-6 w-6" />, label: "分析", href: "/insights", active: false },
+            { icon: <Settings className="h-6 w-6" />, label: "設定", href: "/settings", active: false },
+          ].map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              className={`flex flex-col items-center gap-1 transition-colors ${
+                item.active ? "text-violet-600" : "text-gray-400 hover:text-gray-600"
+              }`}
+            >
+              {item.icon}
+              <span className="text-[10px] font-medium">{item.label}</span>
+            </Link>
           ))}
         </div>
-      </section>
-
-      {/* Bottom CTA */}
-      <section className="px-6 py-16 text-center max-w-xl mx-auto">
-        <p className="text-gray-600 mb-6 leading-relaxed">
-          毎日少しずつ、自分を理解していく。
-          <br />
-          そのための場所が「ふむ」です。
-        </p>
-        <Button
-          size="lg"
-          className="bg-violet-600 hover:bg-violet-700 text-white px-10 py-6 rounded-2xl text-base font-semibold"
-          asChild
-        >
-          <Link href="/journal" className="flex items-center gap-2">
-            今の気持ちを話してみる
-            <ArrowRight className="h-5 w-5" />
-          </Link>
-        </Button>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-gray-100 py-8 text-center text-sm text-gray-400">
-        <p>© 2024 ふむ — メンタルケアアプリ</p>
-      </footer>
+      </nav>
     </div>
   );
 }
