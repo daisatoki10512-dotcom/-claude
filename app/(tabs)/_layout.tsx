@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -20,12 +19,17 @@ type TabIconProps = {
 function TabIcon({ name, focused, label }: TabIconProps) {
   return (
     <View style={styles.tabItem}>
-      <Ionicons
-        name={name}
-        size={24}
-        color={focused ? TEAL : INACTIVE}
-      />
-      <Text style={[styles.tabLabel, { color: focused ? TEAL : INACTIVE }]}>
+      <View style={styles.iconFrame}>
+        <Ionicons
+          name={name}
+          size={24}
+          color={focused ? TEAL : INACTIVE}
+        />
+      </View>
+      <Text
+        style={[styles.tabLabel, { color: focused ? TEAL : INACTIVE }]}
+        numberOfLines={1}
+      >
         {label}
       </Text>
     </View>
@@ -90,20 +94,28 @@ const styles = StyleSheet.create({
     backgroundColor: BG,
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
-    height: Platform.OS === 'ios' ? 83 : 60,
-    paddingBottom: Platform.OS === 'ios' ? 28 : 8,
-    paddingTop: 8,
+    height: 82,
+    paddingTop: 6,
+    paddingBottom: 6,
+    paddingHorizontal: 24,
     elevation: 0,
     shadowOpacity: 0,
   },
   tabItem: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: 8,
+    width: 48,
+    height: 48,
+  },
+  iconFrame: {
+    width: 48,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 2,
   },
   tabLabel: {
     fontSize: 10,
     fontWeight: '500',
-    marginTop: 2,
+    lineHeight: 12,
   },
 });
