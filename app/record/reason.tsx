@@ -249,7 +249,7 @@ export default function ReasonScreen() {
           <TouchableOpacity
             disabled={!canNext}
             activeOpacity={0.85}
-            onPress={() => { /* TODO: 次のステップへ */ }}
+            onPress={() => router.push('/record/event')}
             style={styles.nextBtnWrapper}
           >
             <LinearGradient

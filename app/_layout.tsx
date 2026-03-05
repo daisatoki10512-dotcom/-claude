@@ -31,6 +31,46 @@ export default function RootLayout() {
             animation: 'slide_from_right',
           }}
         />
+        <Stack.Screen
+          name="record/event"
+          options={{
+            headerShown: false,
+            presentation: 'modal',
+            animation: 'slide_from_right',
+          }}
+        />
+        <Stack.Screen
+          name="record/thought"
+          options={{
+            headerShown: false,
+            presentation: 'modal',
+            animation: 'slide_from_right',
+          }}
+        />
+        <Stack.Screen
+          name="record/desire"
+          options={{
+            headerShown: false,
+            presentation: 'modal',
+            animation: 'slide_from_right',
+          }}
+        />
+        <Stack.Screen
+          name="record/analyzing"
+          options={{
+            headerShown: false,
+            presentation: 'modal',
+            animation: 'fade',
+          }}
+        />
+        <Stack.Screen
+          name="record/summary"
+          options={{
+            headerShown: false,
+            presentation: 'modal',
+            animation: 'fade',
+          }}
+        />
       </Stack>
     </>
   );
