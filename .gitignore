@@ -39,3 +39,6 @@ dist/
 
 expo-env.d.ts
 # @end expo-cli
+
+# Expo local config
+.expo/
