@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useState } from 'react';
 import { router } from 'expo-router';
+import { useRecordStore } from '../../store/recordStore';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -91,6 +92,7 @@ export default function EmotionScreen() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [customInput, setCustomInput] = useState('');
   const [customEmotions, setCustomEmotions] = useState<string[]>([]);
+  const setEmotions = useRecordStore(s => s.setEmotions);
 
   const toggle = (label: string) => {
     setSelected(prev => {
@@ -200,7 +202,7 @@ export default function EmotionScreen() {
           <TouchableOpacity
             disabled={!canNext}
             activeOpacity={0.85}
-            onPress={() => router.push('/record/reason')}
+            onPress={() => { setEmotions(Array.from(selected)); router.push('/record/reason'); }}
             style={styles.nextBtnWrapper}
           >
             <LinearGradient

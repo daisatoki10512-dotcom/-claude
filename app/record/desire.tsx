@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useState } from 'react';
 import { router } from 'expo-router';
+import { useRecordStore } from '../../store/recordStore';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -38,6 +39,7 @@ function StepDots() {
 export default function DesireScreen() {
   const [text, setText] = useState('');
   const canNext = text.trim().length > 0;
+  const setDesire = useRecordStore(s => s.setDesire);
 
   return (
     <LinearGradient colors={[BG_TOP, BG_BOT]} style={styles.gradient}>
@@ -81,7 +83,7 @@ export default function DesireScreen() {
             <TouchableOpacity
               disabled={!canNext}
               activeOpacity={0.85}
-              onPress={() => router.push('/record/analyzing')}
+              onPress={() => { setDesire(text); router.push('/record/analyzing'); }}
               style={styles.nextBtnWrapper}
             >
               <LinearGradient
