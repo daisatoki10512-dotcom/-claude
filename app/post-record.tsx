@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
 
   moreIcon: { fontSize: 16, color: TEXT_PRIMARY, letterSpacing: 2 },
   cardBottomRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  bookmarkIcon: { fontSize: 20 },
+  bookmarkIcon: { fontSize: 32 },
 
   // Review (ふりかえり)
   reviewScroll: { gap: 12, paddingBottom: 4 },
