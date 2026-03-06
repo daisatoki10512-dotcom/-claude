@@ -21,7 +21,7 @@ const TEAL = '#0F766E';
 const TEXT_PRI = '#1A1A1A';
 const TEXT_SEC = '#6B7280';
 
-const FACE_TYPES: FaceType[] = [5, 4, 3, 2, 1];
+const FACE_TYPES: FaceType[] = [1, 2, 3, 4, 5];
 
 export type FilterState = {
   keyword: string;
