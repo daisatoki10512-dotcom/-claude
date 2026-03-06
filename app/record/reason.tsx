@@ -34,6 +34,14 @@ const TEXT_PRI        = '#1A1A1A';
 const TEXT_SEC        = '#6B7280';
 
 const TOTAL_STEPS = 8;
+const CHIPS_PER_ROW = 4;
+
+// ── Helpers ───────────────────────────────────────────
+function chunkArray<T>(arr: T[], size: number): T[][] {
+  const result: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) result.push(arr.slice(i, i + size));
+  return result;
+}
 
 // ── Category Data ──────────────────────────────────────
 type Category = {
@@ -111,14 +119,18 @@ function CategoryAccordion({
 
       {isOpen && (
         <View style={styles.accordionBody}>
-          <View style={styles.chipRow}>
-            {category.items.map(item => (
-              <SelectChip
-                key={item}
-                label={item}
-                selected={selectedItems.has(item)}
-                onPress={() => onToggleItem(item)}
-              />
+          <View style={styles.chipGrid}>
+            {chunkArray(category.items, CHIPS_PER_ROW).map((row, ri) => (
+              <View key={ri} style={styles.chipRow}>
+                {row.map(item => (
+                  <SelectChip
+                    key={item}
+                    label={item}
+                    selected={selectedItems.has(item)}
+                    onPress={() => onToggleItem(item)}
+                  />
+                ))}
+              </View>
             ))}
           </View>
         </View>
@@ -294,9 +306,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 16,
   },
+  chipGrid: {
+    gap: 8,
+  },
   chipRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 8,
   },
 

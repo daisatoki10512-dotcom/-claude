@@ -42,7 +42,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
   },
   chipSelected: {
+    borderWidth: 2,
     borderColor: TEAL,
+    // border が 1→2px (+1px/辺) になる分、padding を 1px 削って外寸を固定する
+    paddingVertical: 6,
+    paddingHorizontal: 14,
   },
   iconSlot: {
     width: 14,
