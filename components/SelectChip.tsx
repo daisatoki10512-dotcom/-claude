@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const TEAL = '#0F766E';
@@ -17,10 +17,7 @@ export default function SelectChip({ label, selected, onPress }: SelectChipProps
       onPress={onPress}
       activeOpacity={0.75}
     >
-      {/* アイコン領域は常に確保してチップ幅を固定 */}
-      <View style={styles.iconSlot}>
-        {selected && <Ionicons name="checkmark" size={14} color={TEAL} />}
-      </View>
+      {selected && <Ionicons name="checkmark" size={14} color={TEAL} />}
       <Text style={[styles.label, selected && styles.labelSelected]}>
         {label}
       </Text>
@@ -44,15 +41,9 @@ const styles = StyleSheet.create({
   chipSelected: {
     borderWidth: 2,
     borderColor: TEAL,
-    // border が 1→2px (+1px/辺) になる分、padding を 1px 削って外寸を固定する
+    // border +1px/辺 → padding を 1px 削って外寸の高さを固定
     paddingVertical: 6,
     paddingHorizontal: 14,
-  },
-  iconSlot: {
-    width: 14,
-    height: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   label: {
     fontSize: 15,

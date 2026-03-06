@@ -40,7 +40,7 @@ const NEGATIVE_EMOTIONS = [
   '虚しい', '不満', '恐怖', '辛い', '退屈',
 ];
 
-const CHIPS_PER_ROW = 4;
+const CHIPS_PER_ROW = 3;
 
 const TOTAL_STEPS = 8;
 
