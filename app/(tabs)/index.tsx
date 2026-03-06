@@ -33,7 +33,8 @@ const MOODS: { faceType: FaceType; label: string }[] = [
   { faceType: 5, label: 'とても良い' },
 ];
 
-const MOOD_CIRCLE_SIZE = (width - 48 - 48) / 5;
+// Card inner width = screen - scrollPadding(20*2) - cardPadding(16*2), split across 5 icons with 4 gaps of 8px
+const MOOD_CIRCLE_SIZE = Math.floor((width - 40 - 32 - 32) / 5);
 
 // ── Date helper ────────────────────────────────────────
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
@@ -280,22 +281,28 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 
-  // Mood card
+  // Mood card — matches Figma spec:
+  // width:354, height:206, padding:16, border-radius:20, box-shadow:0 2px 16px 0 rgba(0,0,0,0.04)
   moodCard: {
     backgroundColor: CARD_BG,
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 20,
+    padding: 16,
+    height: 206,
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
     marginBottom: 28,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
+    shadowOpacity: 0.04,
+    shadowRadius: 16,
     elevation: 2,
   },
   moodRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    alignItems: 'center',
+    width: '100%',
   },
   moodItem: {
     borderRadius: MOOD_CIRCLE_SIZE / 2,
@@ -315,6 +322,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     paddingVertical: 16,
     alignItems: 'center',
+    width: '100%',
   },
   recordButtonActive: { backgroundColor: TEAL },
   recordButtonText: {
