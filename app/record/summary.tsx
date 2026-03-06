@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   View,
   Text,
@@ -12,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Polyline } from 'react-native-svg';
 import { useRecordStore, AIAnalysisResult } from '../../store/recordStore';
+import InfoModal from '../../components/InfoModal';
 
 // ── Colors ────────────────────────────────────────────
 const BG_TOP    = '#E5F5EF';
@@ -94,6 +96,7 @@ const FALLBACK: AIAnalysisResult = {
 // ── Main Screen ───────────────────────────────────────
 export default function SummaryScreen() {
   const { aiResult, analysisError } = useRecordStore();
+  const [infoModalVisible, setInfoModalVisible] = useState(false);
 
   // AI結果がない場合（API呼び出し中 or エラー）
   if (!aiResult && !analysisError) {
@@ -141,7 +144,10 @@ export default function SummaryScreen() {
           <Text style={styles.title}>今日の記録を{'\n'}言葉にしてみると</Text>
           <Text style={styles.subtitle}>
             気に入った言葉にマーカーを引くと、{'\n'}ブックマークに残せます。
-            <Text style={styles.infoIcon}> ⓘ</Text>
+            <Text
+              style={styles.infoIcon}
+              onPress={() => setInfoModalVisible(true)}
+            > ⓘ</Text>
           </Text>
 
           {/* エラー通知（API失敗時） */}
@@ -230,6 +236,11 @@ export default function SummaryScreen() {
         </View>
 
       </SafeAreaView>
+
+      <InfoModal
+        visible={infoModalVisible}
+        onClose={() => setInfoModalVisible(false)}
+      />
     </LinearGradient>
   );
 }
