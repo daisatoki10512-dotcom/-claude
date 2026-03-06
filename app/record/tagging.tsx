@@ -54,7 +54,7 @@ export default function TaggingScreen() {
   const handleComplete = () => {
     setTags(selectedTags);
     addRecord({
-      summaryTitle: aiResult?.summaryTitle ?? eventText.slice(0, 20) || '記録済み',
+      summaryTitle: (aiResult?.summaryTitle ?? eventText.slice(0, 20)) || '記録済み',
       moodLabel: aiResult?.moodLabel ?? '記録済み',
       moodType: aiResult?.moodType ?? 'neutral',
       eventText,
