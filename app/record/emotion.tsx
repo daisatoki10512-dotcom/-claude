@@ -12,7 +12,7 @@ import { router } from 'expo-router';
 import { useRecordStore } from '../../store/recordStore';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import RecordHeader, { SCREEN_BG } from '../../components/RecordHeader';
+import RecordHeader, { SCREEN_BG, HEADER_INNER_HEIGHT } from '../../components/RecordHeader';
 import SelectChip from '../../components/SelectChip';
 
 // ── Colors ────────────────────────────────────────────
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   // Scroll
   scroll: {
     paddingHorizontal: 20,
-    paddingTop: 12,
+    paddingTop: HEADER_INNER_HEIGHT + 12,
   },
 
   // Title

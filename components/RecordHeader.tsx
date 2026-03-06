@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import React from 'react';
 
 export const SCREEN_BG = 'rgba(240, 253, 250, 0.96)';
+export const HEADER_INNER_HEIGHT = 52; // paddingTop(12) + icon(32) + paddingBottom(8)
 const TEXT_PRI    = '#1A1A1A';
 const TEAL        = '#0F766E';
 const TOTAL_STEPS = 8;
@@ -58,6 +59,11 @@ export default function RecordHeader({
 
 const styles = StyleSheet.create({
   header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: SCREEN_BG,

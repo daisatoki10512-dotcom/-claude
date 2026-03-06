@@ -14,7 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Polyline } from 'react-native-svg';
 import { useRecordStore, AIAnalysisResult } from '../../store/recordStore';
 import InfoModal from '../../components/InfoModal';
-import RecordHeader, { SCREEN_BG } from '../../components/RecordHeader';
+import RecordHeader, { SCREEN_BG, HEADER_INNER_HEIGHT } from '../../components/RecordHeader';
 
 // ── Colors ────────────────────────────────────────────
 const BG_TOP    = '#E5F5EF';
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
   // Scroll
   scroll: {
     paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingTop: HEADER_INNER_HEIGHT + 8,
   },
 
   // Title
