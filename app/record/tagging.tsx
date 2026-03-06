@@ -27,6 +27,13 @@ const TOTAL_STEPS = 8;
 const CURRENT     = 8;
 
 const SUGGESTED_TAGS = ['理不尽', '人間関係', '仕事', '不安'];
+const SUGGESTED_CHIPS_PER_ROW = 3;
+
+function chunkArray<T>(arr: T[], size: number): T[][] {
+  const result: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) result.push(arr.slice(i, i + size));
+  return result;
+}
 
 // ── Main Screen ───────────────────────────────────────
 export default function TaggingScreen() {
@@ -92,14 +99,18 @@ export default function TaggingScreen() {
 
             {/* おすすめのタグ */}
             <Text style={styles.sectionLabel}>おすすめのタグ</Text>
-            <View style={styles.chipRow}>
-              {SUGGESTED_TAGS.map((tag) => (
-                <SelectChip
-                  key={tag}
-                  label={tag}
-                  selected={selectedTags.includes(tag)}
-                  onPress={() => toggleTag(tag)}
-                />
+            <View style={styles.chipGrid}>
+              {chunkArray(SUGGESTED_TAGS, SUGGESTED_CHIPS_PER_ROW).map((row, ri) => (
+                <View key={ri} style={styles.chipRow}>
+                  {row.map((tag) => (
+                    <SelectChip
+                      key={tag}
+                      label={tag}
+                      selected={selectedTags.includes(tag)}
+                      onPress={() => toggleTag(tag)}
+                    />
+                  ))}
+                </View>
               ))}
             </View>
 
@@ -125,7 +136,7 @@ export default function TaggingScreen() {
 
             {/* 追加済みカスタムタグ */}
             {selectedTags.filter((t) => !SUGGESTED_TAGS.includes(t)).length > 0 && (
-              <View style={styles.chipRow}>
+              <View style={styles.customChipRow}>
                 {selectedTags
                   .filter((t) => !SUGGESTED_TAGS.includes(t))
                   .map((tag) => (
@@ -202,10 +213,18 @@ const styles = StyleSheet.create({
   },
 
   // Chips
+  chipGrid: {
+    gap: 8,
+    marginBottom: 20,
+  },
   chipRow: {
     flexDirection: 'row',
+    gap: 8,
+  },
+  customChipRow: {
+    flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 8,
     marginBottom: 20,
   },
 
