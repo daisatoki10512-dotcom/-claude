@@ -22,7 +22,7 @@ function TabIcon({ Icon, focused, label }: TabIconProps) {
   return (
     <View style={styles.tabItem}>
       <View style={styles.iconFrame}>
-        <Icon size={24} color={focused ? TEAL : INACTIVE} />
+        <Icon size={20} color={focused ? TEAL : INACTIVE} />
       </View>
       <Text
         style={[styles.tabLabel, { color: focused ? TEAL : INACTIVE }]}
@@ -101,13 +101,15 @@ const styles = StyleSheet.create({
   },
   tabItem: {
     flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
     width: 48,
     height: 48,
   },
   iconFrame: {
-    width: 48,
+    width: 20,
+    height: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
