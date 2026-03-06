@@ -6,8 +6,8 @@ import {
   TextInput,
   SafeAreaView,
 } from 'react-native';
-import { useState, useRef, useEffect } from 'react';
-import { router } from 'expo-router';
+import { useState, useRef, useCallback } from 'react';
+import { router, useFocusEffect } from 'expo-router';
 import { useRecordStore } from '../../store/recordStore';
 import { LinearGradient } from 'expo-linear-gradient';
 import RecordHeader, { SCREEN_BG } from '../../components/RecordHeader';
@@ -22,10 +22,10 @@ export default function DesireScreen() {
   const canNext = text.trim().length > 0;
   const setDesire = useRecordStore(s => s.setDesire);
   const inputRef = useRef<TextInput>(null);
-  useEffect(() => {
-    const t = setTimeout(() => inputRef.current?.focus(), 300);
+  useFocusEffect(useCallback(() => {
+    const t = setTimeout(() => inputRef.current?.focus(), 100);
     return () => clearTimeout(t);
-  }, []);
+  }, []));
 
   return (
     <View style={styles.root}>
