@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
     lineHeight: 39,
   },
   greetingMessage: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '400',
     color: TEXT_SECONDARY,
     lineHeight: 25.6,
