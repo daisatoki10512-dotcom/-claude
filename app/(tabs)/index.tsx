@@ -196,22 +196,26 @@ export default function HomeScreen() {
               </View>
               </View>
               <TouchableOpacity
-                style={[
-                  styles.recordButton,
-                  selectedMood !== null && styles.recordButtonActive,
-                ]}
+                style={styles.recordBtnWrapper}
                 disabled={selectedMood === null}
                 activeOpacity={0.8}
                 onPress={() => router.push('/record/emotion')}
               >
-                <Text
-                  style={[
-                    styles.recordButtonText,
-                    selectedMood !== null && styles.recordButtonTextActive,
-                  ]}
+                <LinearGradient
+                  colors={selectedMood !== null ? ['#134E4A', '#14CBB4'] : ['#E5E7EB', '#E5E7EB']}
+                  style={styles.recordBtn}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
                 >
-                  記録する
-                </Text>
+                  <Text
+                    style={[
+                      styles.recordButtonText,
+                      selectedMood !== null && styles.recordButtonTextActive,
+                    ]}
+                  >
+                    記録する
+                  </Text>
+                </LinearGradient>
               </TouchableOpacity>
             </View>
           </>
@@ -332,14 +336,22 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
-  recordButton: {
-    backgroundColor: BTN_DIS_BG,
-    borderRadius: 50,
-    paddingVertical: 16,
-    alignItems: 'center',
+  recordBtnWrapper: {
+    borderRadius: 20,
+    overflow: 'hidden',
     width: '100%',
+    shadowColor: '#667EEA',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.19,
+    shadowRadius: 16,
+    elevation: 5,
   },
-  recordButtonActive: { backgroundColor: TEAL },
+  recordBtn: {
+    height: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 20,
+  },
   recordButtonText: {
     fontSize: 16,
     fontWeight: '600',

@@ -22,8 +22,8 @@ const BG_TOP    = '#E5F5EF';
 const BG_BOT    = '#DDF0E8';
 const TEXT_PRI  = '#1A1A1A';
 const TEXT_SEC  = '#6B7280';
-const TEAL      = '#2AA090';
-const TEAL_DARK = '#1A7063';
+const TEAL      = '#14CBB4';
+const TEAL_DARK = '#134E4A';
 const WHITE     = '#FFFFFF';
 
 const TOTAL_STEPS = 8;
@@ -306,13 +306,19 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   completeBtnWrapper: {
-    borderRadius: 50,
+    borderRadius: 20,
     overflow: 'hidden',
+    shadowColor: '#667EEA',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.19,
+    shadowRadius: 16,
+    elevation: 5,
   },
   completeBtn: {
-    paddingVertical: 18,
+    height: 56,
     alignItems: 'center',
-    borderRadius: 50,
+    justifyContent: 'center',
+    borderRadius: 20,
   },
   completeBtnText: {
     fontSize: 17,

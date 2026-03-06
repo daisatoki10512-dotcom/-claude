@@ -183,7 +183,7 @@ export default function EmotionScreen() {
             style={styles.nextBtnWrapper}
           >
             <LinearGradient
-              colors={canNext ? ['#1A7063', '#2AA090'] : ['#E5E7EB', '#E5E7EB']}
+              colors={canNext ? ['#134E4A', '#14CBB4'] : ['#E5E7EB', '#E5E7EB']}
               style={styles.nextBtn}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
@@ -308,13 +308,19 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   nextBtnWrapper: {
-    borderRadius: 50,
+    borderRadius: 20,
     overflow: 'hidden',
+    shadowColor: '#667EEA',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.19,
+    shadowRadius: 16,
+    elevation: 5,
   },
   nextBtn: {
-    paddingVertical: 18,
+    height: 56,
     alignItems: 'center',
-    borderRadius: 50,
+    justifyContent: 'center',
+    borderRadius: 20,
   },
   nextBtnText: {
     fontSize: 17,
