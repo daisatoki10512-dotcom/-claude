@@ -7,8 +7,9 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
+import FaceIcon, { FaceType } from '../../components/ui/FaceIcon';
+import { useCompletedRecordsStore, CompletedRecord } from '../../store/completedRecordsStore';
 
 const BG = '#E5F5EF';
 const CARD_BG = '#FFFFFF';
@@ -18,63 +19,41 @@ const TEAL = '#0F766E';
 const TAG_BG = '#F3F4F6';
 const TAG_TEXT = '#374151';
 
-type MoodCircleProps = {
-  gradientColors: [string, string];
-  emoji: string;
+const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
+
+const MOOD_FACE_TYPE: Record<CompletedRecord['moodType'], FaceType> = {
+  negative: 2,
+  neutral:  3,
+  positive: 4,
 };
 
-function MoodCircle({ gradientColors, emoji }: MoodCircleProps) {
-  return (
-    <LinearGradient
-      colors={gradientColors}
-      style={styles.moodCircle}
-      start={{ x: 0.3, y: 0 }}
-      end={{ x: 0.7, y: 1 }}
-    >
-      <Text style={styles.moodEmoji}>{emoji}</Text>
-    </LinearGradient>
-  );
+function formatDateHeader(date: Date): string {
+  const m = date.getMonth() + 1;
+  const d = date.getDate();
+  const w = WEEKDAYS[date.getDay()];
+  return `${m}/${d}（${w}）`;
 }
 
-const bookmarkData = [
-  {
-    date: '11/7（木）',
-    entries: [
-      {
-        id: 1,
-        mood: { emoji: '😢', colors: ['#9B7FE8', '#7C3AED'] as [string, string] },
-        bookmarked: true,
-        title: '左目のドライアイと、繰り返すケアへのもどかしさ',
-        description:
-          '目薬を差し、大好きなカフェインも控えて対策を頑張っているのに、左目が開かないほどの痛みが起きると、やり場のないイライラを感じ...',
-        aiCount: 1,
-        tags: ['不満', 'イライラ', '体調'],
-        markers: ['理不尽', '佐藤先輩'],
-      },
-    ],
-  },
-  {
-    date: '11/3（日）',
-    entries: [
-      {
-        id: 2,
-        mood: { emoji: '😄', colors: ['#F5D04A', '#F0A020'] as [string, string] },
-        bookmarked: true,
-        title: '久しぶりに祖父母の元気な顔を見られた',
-        description:
-          '祖父母に会いに行き、元気そうな様子を見られたことで、安心や感謝の気持ちが自然と湧いてきたのですね。「ずっと元気でいてほしい」...',
-        aiCount: 0,
-        tags: ['安心', '感謝', '家族'],
-        markers: [],
-      },
-    ],
-  },
-];
+function groupByDate(records: CompletedRecord[]) {
+  const map = new Map<string, { label: string; records: CompletedRecord[] }>();
+  for (const r of records) {
+    const key = `${r.date.getFullYear()}-${r.date.getMonth()}-${r.date.getDate()}`;
+    if (!map.has(key)) {
+      map.set(key, { label: formatDateHeader(r.date), records: [] });
+    }
+    map.get(key)!.records.push(r);
+  }
+  return Array.from(map.values());
+}
 
 const TABS = ['記録', 'マーカー', '気づき'];
 
 export default function BookmarksScreen() {
   const [activeTab, setActiveTab] = useState(0);
+  const { records, toggleBookmark } = useCompletedRecordsStore();
+
+  const bookmarked = records.filter((r) => r.bookmarked);
+  const grouped = groupByDate(bookmarked);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -100,11 +79,6 @@ export default function BookmarksScreen() {
               <Text style={[styles.tabText, activeTab === i && styles.tabTextActive]}>
                 {tab}
               </Text>
-              {tab === 'マーカー' && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>1</Text>
-                </View>
-              )}
             </TouchableOpacity>
           ))}
         </View>
@@ -115,70 +89,72 @@ export default function BookmarksScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {bookmarkData.map((group) => (
-          <View key={group.date}>
-            <Text style={styles.dateHeader}>{group.date}</Text>
-            {group.entries.map((entry) => (
-              <TouchableOpacity
-                key={entry.id}
-                style={styles.entryCard}
-                activeOpacity={0.9}
-              >
-                {/* ヘッダー行 */}
-                <View style={styles.entryHeader}>
-                  <MoodCircle
-                    gradientColors={entry.mood.colors}
-                    emoji={entry.mood.emoji}
-                  />
-                  <Text style={styles.entryTitle} numberOfLines={2}>
-                    {entry.title}
-                  </Text>
-                  <Ionicons
-                    name={entry.bookmarked ? 'bookmark' : 'bookmark-outline'}
-                    size={22}
-                    color={entry.bookmarked ? TEAL : '#C0C8D0'}
-                  />
-                </View>
-
-                {/* 本文 */}
-                <Text style={styles.entryDescription} numberOfLines={3}>
-                  {entry.description}
-                </Text>
-
-                {/* AI返信数 */}
-                {entry.aiCount > 0 && (
-                  <View style={styles.aiCountBadge}>
-                    <View style={styles.aiCountIcon}>
-                      <Ionicons name="person" size={12} color={TEAL} />
-                    </View>
-                    <Text style={styles.aiCountText}>{entry.aiCount}</Text>
-                  </View>
-                )}
-
-                {/* 感情タグ */}
-                <View style={styles.tagsRow}>
-                  {entry.tags.map((tag) => (
-                    <View key={tag} style={styles.tag}>
-                      <Text style={styles.tagText}>{tag}</Text>
-                    </View>
-                  ))}
-                </View>
-
-                {/* マーカー */}
-                {entry.markers.length > 0 && (
-                  <View style={styles.markersRow}>
-                    {entry.markers.map((marker) => (
-                      <View key={marker} style={styles.markerItem}>
-                        <Ionicons name="pricetag" size={11} color={TEAL} />
-                        <Text style={styles.markerText}>{marker}</Text>
-                      </View>
-                    ))}
-                  </View>
-                )}
-              </TouchableOpacity>
-            ))}
+        {grouped.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Ionicons name="bookmark-outline" size={48} color="#C0C8D0" />
+            <Text style={styles.emptyText}>ブックマークはありません</Text>
+            <Text style={styles.emptySubText}>記録のブックマークアイコンをタップして{'\n'}保存しましょう</Text>
           </View>
-        ))}
+        ) : (
+          grouped.map((group) => (
+            <View key={group.label}>
+              <Text style={styles.dateHeader}>{group.label}</Text>
+              {group.records.map((record) => {
+                const faceType = MOOD_FACE_TYPE[record.moodType];
+                const previewText = record.detail[0] ?? '';
+                const allChips = [...record.emotionChips, ...record.eventChips];
+
+                return (
+                  <View key={record.id} style={styles.entryCard}>
+                    {/* ヘッダー行 */}
+                    <View style={styles.entryHeader}>
+                      <FaceIcon type={faceType} active size={48} />
+                      <Text style={styles.entryTitle} numberOfLines={2}>
+                        {record.eventText || record.moodLabel}
+                      </Text>
+                      <TouchableOpacity
+                        hitSlop={12}
+                        onPress={() => toggleBookmark(record.id)}
+                      >
+                        <Ionicons name="bookmark" size={22} color={TEAL} />
+                      </TouchableOpacity>
+                    </View>
+
+                    {/* 本文 */}
+                    {!!previewText && (
+                      <Text style={styles.entryDescription} numberOfLines={3}>
+                        {previewText}
+                      </Text>
+                    )}
+
+                    {/* 感情チップ */}
+                    {allChips.length > 0 && (
+                      <View style={styles.tagsRow}>
+                        {allChips.map((chip) => (
+                          <View key={chip} style={styles.tag}>
+                            <Text style={styles.tagText}>{chip}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+
+                    {/* タグ */}
+                    {record.tags.length > 0 && (
+                      <View style={styles.markersRow}>
+                        {record.tags.map((tag) => (
+                          <View key={tag} style={styles.markerItem}>
+                            <Ionicons name="pricetag" size={11} color={TEAL} />
+                            <Text style={styles.markerText}>{tag}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
+            </View>
+          ))
+        )}
         <View style={{ height: 16 }} />
       </ScrollView>
     </SafeAreaView>
@@ -188,7 +164,6 @@ export default function BookmarksScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: BG },
 
-  // ヘッダー
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -198,18 +173,10 @@ const styles = StyleSheet.create({
     backgroundColor: BG,
   },
   searchBtn: { width: 36 },
-  headerTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: TEXT_PRIMARY,
-  },
+  headerTitle: { fontSize: 17, fontWeight: '600', color: TEXT_PRIMARY },
   headerRight: { width: 36 },
 
-  // タブ
-  tabContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 16,
-  },
+  tabContainer: { paddingHorizontal: 20, marginBottom: 16 },
   tabBar: {
     flexDirection: 'row',
     backgroundColor: '#E5E7EB',
@@ -233,28 +200,28 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  tabText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: TEXT_SECONDARY,
-  },
-  tabTextActive: {
-    color: TEXT_PRIMARY,
-    fontWeight: '600',
-  },
-  badge: {
-    backgroundColor: '#EF4444',
-    borderRadius: 10,
-    width: 18,
-    height: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  badgeText: { fontSize: 11, color: '#FFF', fontWeight: '700' },
+  tabText: { fontSize: 13, fontWeight: '500', color: TEXT_SECONDARY },
+  tabTextActive: { color: TEXT_PRIMARY, fontWeight: '600' },
 
-  // リスト
   scrollView: { flex: 1, backgroundColor: BG },
   scrollContent: { paddingHorizontal: 20 },
+
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 80,
+    gap: 12,
+  },
+  emptyText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: TEXT_SECONDARY,
+  },
+  emptySubText: {
+    fontSize: 13,
+    color: '#B0B8C0',
+    textAlign: 'center',
+  },
 
   dateHeader: {
     fontSize: 16,
@@ -265,30 +232,21 @@ const styles = StyleSheet.create({
   },
   entryCard: {
     backgroundColor: CARD_BG,
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 16,
+    gap: 8,
     marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 16,
     elevation: 2,
   },
   entryHeader: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 10,
-    marginBottom: 10,
   },
-  moodCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  moodEmoji: { fontSize: 26 },
   entryTitle: {
     flex: 1,
     fontSize: 16,
@@ -300,29 +258,8 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: TEXT_SECONDARY,
     lineHeight: 20,
-    marginBottom: 10,
   },
-  aiCountBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#E0F5F0',
-    alignSelf: 'flex-start',
-    borderRadius: 50,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    marginBottom: 8,
-  },
-  aiCountIcon: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: TEAL,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  aiCountText: { fontSize: 13, fontWeight: '600', color: TEAL },
-  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
+  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   tag: {
     backgroundColor: TAG_BG,
     borderRadius: 50,

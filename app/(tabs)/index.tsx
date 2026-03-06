@@ -53,7 +53,7 @@ const MOOD_FACE_TYPE: Record<CompletedRecord['moodType'], FaceType> = {
 };
 
 // ── Today's record card ────────────────────────────────
-function TodayRecordCard({ record }: { record: CompletedRecord }) {
+function TodayRecordCard({ record, onToggleBookmark }: { record: CompletedRecord; onToggleBookmark: () => void }) {
   const faceType = MOOD_FACE_TYPE[record.moodType];
   const previewText = record.detail[0] || record.eventText;
   const allChips = [...record.emotionChips, ...record.eventChips];
@@ -68,8 +68,12 @@ function TodayRecordCard({ record }: { record: CompletedRecord }) {
           {record.eventText || record.moodLabel}
         </Text>
 
-        <TouchableOpacity hitSlop={12}>
-          <Ionicons name="bookmark-outline" size={20} color={TEXT_SEC} />
+        <TouchableOpacity hitSlop={12} onPress={onToggleBookmark}>
+          <Ionicons
+            name={record.bookmarked ? 'bookmark' : 'bookmark-outline'}
+            size={20}
+            color={record.bookmarked ? TEAL : TEXT_SEC}
+          />
         </TouchableOpacity>
       </View>
 
@@ -127,7 +131,7 @@ function ReviewCard() {
 // ── Main Screen ────────────────────────────────────────
 export default function HomeScreen() {
   const [selectedMood, setSelectedMood] = useState<number | null>(null);
-  const { records } = useCompletedRecordsStore();
+  const { records, toggleBookmark } = useCompletedRecordsStore();
 
   const today = new Date();
   const todayRecord = records.find((r) => {
@@ -166,7 +170,7 @@ export default function HomeScreen() {
         {todayRecord ? (
           <>
             <Text style={styles.sectionTitle}>{formatDateLabel(today)}</Text>
-            <TodayRecordCard record={todayRecord} />
+            <TodayRecordCard record={todayRecord} onToggleBookmark={() => toggleBookmark(todayRecord.id)} />
           </>
         ) : (
           <>
