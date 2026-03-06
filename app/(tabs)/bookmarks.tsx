@@ -11,6 +11,7 @@ import { useState } from 'react';
 import FaceIcon, { FaceType } from '../../components/ui/FaceIcon';
 import { useCompletedRecordsStore, CompletedRecord } from '../../store/completedRecordsStore';
 import { BookmarkIcon, TagIcon } from '../../components/ui/AppIcons';
+import SearchFilterModal, { FilterState, applyFilter } from '../../components/ui/SearchFilterModal';
 
 const BG = '#E5F5EF';
 const CARD_BG = '#FFFFFF';
@@ -51,18 +52,28 @@ const TABS = ['記録', 'マーカー', '気づき'];
 
 export default function BookmarksScreen() {
   const [activeTab, setActiveTab] = useState(0);
+  const [filterVisible, setFilterVisible] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<FilterState | null>(null);
   const { records, toggleBookmark } = useCompletedRecordsStore();
 
   const bookmarked = records.filter((r) => r.bookmarked);
-  const grouped = groupByDate(bookmarked);
+  const filtered = activeFilter ? applyFilter(bookmarked, activeFilter) : bookmarked;
+  const grouped = groupByDate(filtered);
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <SearchFilterModal
+        visible={filterVisible}
+        onClose={() => setFilterVisible(false)}
+        records={bookmarked}
+        onApply={(f) => setActiveFilter(f)}
+      />
+
       {/* 上部固定: ヘッダー + タブ */}
       <View style={styles.stickyHeader}>
         <View style={styles.header}>
-          <TouchableOpacity style={styles.searchBtn} activeOpacity={0.7}>
-            <Ionicons name="search" size={22} color={TEXT_PRIMARY} />
+          <TouchableOpacity style={styles.searchBtn} activeOpacity={0.7} onPress={() => setFilterVisible(true)}>
+            <Ionicons name="search" size={22} color={activeFilter ? TEAL : TEXT_PRIMARY} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>ブックマーク</Text>
           <View style={styles.headerRight} />
