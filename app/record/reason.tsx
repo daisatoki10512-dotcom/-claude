@@ -35,59 +35,44 @@ const TEXT_SEC        = '#6B7280';
 
 const TOTAL_STEPS = 8;
 
-// ── Helpers ───────────────────────────────────────────
-function chunkArray<T>(arr: T[], size: number): T[][] {
-  const result: T[][] = [];
-  for (let i = 0; i < arr.length; i += size) result.push(arr.slice(i, i + size));
-  return result;
-}
-
 // ── Category Data ──────────────────────────────────────
 type Category = {
   id: string;
   label: string;
   Icon: React.ComponentType<{ size?: number; color?: string }>;
   items: string[];
-  chipsPerRow: number;
 };
 
-// chipsPerRow: ラベルが長い場合は 2、短い場合は 3
-// 判定基準: 全選択時に 3/行だと 335px を超えるカテゴリ → 2/行
 const CATEGORIES: Category[] = [
   {
     id: 'relationship',
     label: '人間関係',
     Icon: HeartHandshakeIcon,
     items: ['家族', '友人', '恋人・パートナー', '学校関係', '職場関係', '隣人', 'オンライン・SNS', 'コミュニティ'],
-    chipsPerRow: 2, // 恋人・パートナー(8文字)などが長い
   },
   {
     id: 'work',
     label: '仕事・学校',
     Icon: BriefcaseIcon,
     items: ['仕事量', '締め切り', '職場の雰囲気', '上司・同僚', '給与・評価', '勉強・課題', '試験・成績', '進路'],
-    chipsPerRow: 2, // 職場の雰囲気(6文字)などが長い
   },
   {
     id: 'mind',
     label: '心と体',
     Icon: HeartIcon,
     items: ['睡眠不足', '体調不良', '疲労', 'メンタル', '食欲', '運動不足', '病気・症状'],
-    chipsPerRow: 3, // 最長5文字、実際の行は問題なし
   },
   {
     id: 'life',
     label: '生活・環境',
     Icon: GlobeIcon,
     items: ['お金・経済', '住環境', '家事・育児', '交通・移動', '天気・季節', '騒音・環境', 'ひとり暮らし'],
-    chipsPerRow: 2, // 5〜6文字のラベルが多い
   },
   {
     id: 'future',
     label: '将来・その他',
     Icon: ClockIcon,
     items: ['将来への不安', '目標・夢', 'キャリア', '人生の変化', 'その他'],
-    chipsPerRow: 2, // 将来への不安(6文字)が長い
   },
 ];
 
@@ -126,18 +111,14 @@ function CategoryAccordion({
 
       {isOpen && (
         <View style={styles.accordionBody}>
-          <View style={styles.chipGrid}>
-            {chunkArray(category.items, category.chipsPerRow).map((row, ri) => (
-              <View key={ri} style={styles.chipRow}>
-                {row.map(item => (
-                  <SelectChip
-                    key={item}
-                    label={item}
-                    selected={selectedItems.has(item)}
-                    onPress={() => onToggleItem(item)}
-                  />
-                ))}
-              </View>
+          <View style={styles.chipRow}>
+            {category.items.map(item => (
+              <SelectChip
+                key={item}
+                label={item}
+                selected={selectedItems.has(item)}
+                onPress={() => onToggleItem(item)}
+              />
             ))}
           </View>
         </View>
@@ -313,11 +294,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 16,
   },
-  chipGrid: {
-    gap: 8,
-  },
   chipRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
   },
 

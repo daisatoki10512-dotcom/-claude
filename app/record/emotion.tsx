@@ -19,13 +19,6 @@ import SelectChip from '../../components/SelectChip';
 const TEXT_PRI  = '#1A1A1A';
 const TEXT_SEC  = '#6B7280';
 
-// ── Helpers ───────────────────────────────────────────
-function chunkArray<T>(arr: T[], size: number): T[][] {
-  const result: T[][] = [];
-  for (let i = 0; i < arr.length; i += size) result.push(arr.slice(i, i + size));
-  return result;
-}
-
 // ── Data ──────────────────────────────────────────────
 const POSITIVE_EMOTIONS = [
   '嬉しい', '楽しい', '幸せ', '面白い',
@@ -39,8 +32,6 @@ const NEGATIVE_EMOTIONS = [
   '罪悪感', '疲労', '孤独', '苦しい',
   '虚しい', '不満', '恐怖', '辛い', '退屈',
 ];
-
-const CHIPS_PER_ROW = 3;
 
 const TOTAL_STEPS = 8;
 
@@ -87,25 +78,17 @@ export default function EmotionScreen() {
 
           {/* ポジティブ */}
           <Text style={styles.categoryLabel}>ポジティブ</Text>
-          <View style={styles.chipGrid}>
-            {chunkArray(POSITIVE_EMOTIONS, CHIPS_PER_ROW).map((row, ri) => (
-              <View key={ri} style={styles.chipRow}>
-                {row.map(e => (
-                  <SelectChip key={e} label={e} selected={selected.has(e)} onPress={() => toggle(e)} />
-                ))}
-              </View>
+          <View style={styles.chipRow}>
+            {POSITIVE_EMOTIONS.map(e => (
+              <SelectChip key={e} label={e} selected={selected.has(e)} onPress={() => toggle(e)} />
             ))}
           </View>
 
           {/* ネガティブ */}
           <Text style={styles.categoryLabel}>ネガティブ</Text>
-          <View style={styles.chipGrid}>
-            {chunkArray(NEGATIVE_EMOTIONS, CHIPS_PER_ROW).map((row, ri) => (
-              <View key={ri} style={styles.chipRow}>
-                {row.map(e => (
-                  <SelectChip key={e} label={e} selected={selected.has(e)} onPress={() => toggle(e)} />
-                ))}
-              </View>
+          <View style={styles.chipRow}>
+            {NEGATIVE_EMOTIONS.map(e => (
+              <SelectChip key={e} label={e} selected={selected.has(e)} onPress={() => toggle(e)} />
             ))}
           </View>
 
@@ -113,13 +96,9 @@ export default function EmotionScreen() {
           {customEmotions.length > 0 && (
             <>
               <Text style={styles.categoryLabel}>作成した感情</Text>
-              <View style={styles.chipGrid}>
-                {chunkArray(customEmotions, CHIPS_PER_ROW).map((row, ri) => (
-                  <View key={ri} style={styles.chipRow}>
-                    {row.map(e => (
-                      <SelectChip key={e} label={e} selected={selected.has(e)} onPress={() => toggle(e)} />
-                    ))}
-                  </View>
+              <View style={styles.chipRow}>
+                {customEmotions.map(e => (
+                  <SelectChip key={e} label={e} selected={selected.has(e)} onPress={() => toggle(e)} />
                 ))}
               </View>
             </>
@@ -207,13 +186,11 @@ const styles = StyleSheet.create({
   },
 
   // Chips
-  chipGrid: {
-    gap: 8,
-    marginBottom: 20,
-  },
   chipRow: {
     flexDirection: 'row',
-    gap: 8,
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 20,
   },
 
   // Custom input

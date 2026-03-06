@@ -11,79 +11,72 @@ import {
 import { useState } from 'react';
 import { router } from 'expo-router';
 import { useRecordStore } from '../../store/recordStore';
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import RecordHeader, { SCREEN_BG } from '../../components/RecordHeader';
 
-const BG_TOP      = '#E5F5EF';
-const BG_BOT      = '#DDF0E8';
-const TEXT_PRI    = '#1A1A1A';
-const TEXT_SEC    = '#6B7280';
-const TEAL        = '#14CBB4';
-const TEAL_DARK   = '#134E4A';
+const TEXT_PRI  = '#1A1A1A';
+const TEXT_SEC  = '#6B7280';
+const TEAL      = '#14CBB4';
+const TEAL_DARK = '#134E4A';
+
 export default function DesireScreen() {
   const [text, setText] = useState('');
   const canNext = text.trim().length > 0;
   const setDesire = useRecordStore(s => s.setDesire);
 
   return (
-    <View style={styles.root}>
+    <KeyboardAvoidingView
+      style={styles.root}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <SafeAreaView style={styles.safe}>
-        <KeyboardAvoidingView
-          style={styles.kav}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={0}
-        >
-          <RecordHeader current={5} />
+        <RecordHeader current={5} />
 
-          {/* コンテンツ */}
-          <View style={styles.content}>
-            <Text style={styles.title}>本当は{'\n'}どうしたかったですか？</Text>
-            <Text style={styles.subtitle}>
-              ここで本音を吐き出すことが、{'\n'}モヤモヤを解消する一番の近道です。{'\n'}「〜すべき」は一旦忘れましょう。
-            </Text>
+        <View style={styles.content}>
+          <Text style={styles.title}>本当は{'\n'}どうしたかったですか？</Text>
+          <Text style={styles.subtitle}>
+            ここで本音を吐き出すことが、{'\n'}モヤモヤを解消する一番の近道です。{'\n'}「〜すべき」は一旦忘れましょう。
+          </Text>
 
-            <TextInput
-              style={styles.textarea}
-              placeholder={'例：「本当はもっと頼りたかった」「ただ話\nを聞いてほしかった」'}
-              placeholderTextColor={TEXT_SEC}
-              value={text}
-              onChangeText={setText}
-              multiline
-              textAlignVertical="top"
-            />
-          </View>
+          <TextInput
+            style={styles.textarea}
+            placeholder={'例：「本当はもっと頼りたかった」「ただ話\nを聞いてほしかった」'}
+            placeholderTextColor={TEXT_SEC}
+            value={text}
+            onChangeText={setText}
+            multiline
+            textAlignVertical="top"
+            autoFocus
+          />
+        </View>
 
-          {/* フッター */}
-          <View style={styles.footer}>
-            <TouchableOpacity
-              disabled={!canNext}
-              activeOpacity={0.85}
-              onPress={() => { setDesire(text); router.push('/record/analyzing'); }}
-              style={styles.nextBtnWrapper}
+        <View style={styles.footer}>
+          <TouchableOpacity
+            disabled={!canNext}
+            activeOpacity={0.85}
+            onPress={() => { setDesire(text); router.push('/record/analyzing'); }}
+            style={styles.nextBtnWrapper}
+          >
+            <LinearGradient
+              colors={canNext ? [TEAL_DARK, TEAL] : ['#E5E7EB', '#E5E7EB']}
+              style={styles.nextBtn}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
             >
-              <LinearGradient
-                colors={canNext ? [TEAL_DARK, TEAL] : ['#E5E7EB', '#E5E7EB']}
-                style={styles.nextBtn}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-              >
-                <Text style={[styles.nextBtnText, !canNext && styles.nextBtnTextDisabled]}>
-                  次へ
-                </Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
+              <Text style={[styles.nextBtnText, !canNext && styles.nextBtnTextDisabled]}>
+                次へ
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: SCREEN_BG },
   safe: { flex: 1 },
-  kav:  { flex: 1 },
 
   content: {
     flex: 1,
@@ -114,7 +107,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     fontSize: 15,
     color: TEXT_PRI,
-    minHeight: 160,
+    flex: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
