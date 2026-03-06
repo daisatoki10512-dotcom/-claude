@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     fontSize: 15,
     color: TEXT_PRI,
-    height: 160,
+    height: 100,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
