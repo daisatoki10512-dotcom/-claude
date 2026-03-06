@@ -30,7 +30,7 @@ const SUGGESTED_TAGS = ['理不尽', '人間関係', '仕事', '不安'];
 
 // ── Main Screen ───────────────────────────────────────
 export default function TaggingScreen() {
-  const { aiResult, eventText, emotions, setTags, reset } = useRecordStore();
+  const { aiResult, eventText, emotions, markerHighlights, setTags, reset } = useRecordStore();
   const { addRecord } = useCompletedRecordsStore();
 
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -62,6 +62,7 @@ export default function TaggingScreen() {
       emotionChips: aiResult?.emotionChips ?? emotions,
       eventChips: aiResult?.eventChips ?? [],
       tags: selectedTags,
+      markerHighlights,
     });
     reset();
     router.push('/record/complete');

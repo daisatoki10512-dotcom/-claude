@@ -12,6 +12,7 @@ import FaceIcon, { FaceType } from '../../components/ui/FaceIcon';
 import { useCompletedRecordsStore, CompletedRecord } from '../../store/completedRecordsStore';
 import { BookmarkIcon, TagIcon } from '../../components/ui/AppIcons';
 import SearchFilterModal, { FilterState, applyFilter } from '../../components/ui/SearchFilterModal';
+import MarkedText from '../../components/ui/MarkedText';
 
 const BG = '#E5F5EF';
 const CARD_BG = '#FFFFFF';
@@ -113,7 +114,7 @@ export default function RecordsScreen() {
               <Text style={styles.dateHeader}>{group.label}</Text>
               {group.records.map((record) => {
                 const faceType = MOOD_FACE_TYPE[record.moodType];
-                const bodyText = record.detail[0] ?? '';
+                const bodyText = record.detail.join('\n\n');
                 const categoryChips = [...record.emotionChips, ...record.eventChips];
 
                 return (
@@ -134,9 +135,12 @@ export default function RecordsScreen() {
 
                     {/* 本文: AIの振り返り文（3行まで） */}
                     {!!bodyText && (
-                      <Text style={styles.entryDescription} numberOfLines={3}>
-                        {bodyText}
-                      </Text>
+                      <MarkedText
+                        style={styles.entryDescription}
+                        numberOfLines={3}
+                        text={bodyText}
+                        highlights={record.markerHighlights ?? []}
+                      />
                     )}
 
                     {/* カテゴリ: 感情 + 出来事カテゴリ */}

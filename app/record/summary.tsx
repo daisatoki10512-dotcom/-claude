@@ -16,6 +16,8 @@ import { useRecordStore, AIAnalysisResult } from '../../store/recordStore';
 import InfoModal from '../../components/InfoModal';
 import RecordHeader, { SCREEN_BG, HEADER_INNER_HEIGHT } from '../../components/RecordHeader';
 import FaceIcon, { FaceType } from '../../components/ui/FaceIcon';
+import { buildSegments } from '../../components/ui/MarkedText';
+import { MarkerHighlight } from '../../store/recordStore';
 
 // ── Colors ────────────────────────────────────────────
 const TEXT_PRI  = '#1A1A1A';
@@ -31,23 +33,7 @@ const MOOD_TEXT_COLOR: Record<AIAnalysisResult['moodType'], string> = {
   positive: '#0F766E',
 };
 
-// ── Highlight helpers ─────────────────────────────────
-type Highlight = { start: number; end: number };
-
-function buildSegments(text: string, highlights: Highlight[]) {
-  const sorted = [...highlights].sort((a, b) => a.start - b.start);
-  const segs: { text: string; highlighted: boolean }[] = [];
-  let pos = 0;
-  for (const h of sorted) {
-    const s = Math.max(h.start, pos);
-    const e = h.end;
-    if (s > pos) segs.push({ text: text.slice(pos, s), highlighted: false });
-    if (e > s)   segs.push({ text: text.slice(s, e),   highlighted: true  });
-    pos = Math.max(pos, e);
-  }
-  if (pos < text.length) segs.push({ text: text.slice(pos), highlighted: false });
-  return segs;
-}
+type Highlight = MarkerHighlight;
 
 // ── Sub-components ────────────────────────────────────
 function InsightIcon() {
@@ -84,7 +70,7 @@ const FALLBACK: AIAnalysisResult = {
 
 // ── Main Screen ───────────────────────────────────────
 export default function SummaryScreen() {
-  const { aiResult, analysisError, moodFaceType } = useRecordStore();
+  const { aiResult, analysisError, moodFaceType, setMarkerHighlights } = useRecordStore();
   const [infoModalVisible, setInfoModalVisible] = useState(false);
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [pendingSel, setPendingSel] = useState<Highlight | null>(null);
@@ -113,7 +99,9 @@ export default function SummaryScreen() {
 
   function applyMarker() {
     if (!pendingSel) return;
-    setHighlights(prev => [...prev, pendingSel!]);
+    const next = [...highlights, pendingSel!];
+    setHighlights(next);
+    setMarkerHighlights(next);
     setPendingSel(null);
   }
 
@@ -196,7 +184,7 @@ export default function SummaryScreen() {
             {highlights.length > 0 && (
               <TouchableOpacity
                 style={styles.clearBtn}
-                onPress={() => setHighlights([])}
+                onPress={() => { setHighlights([]); setMarkerHighlights([]); }}
                 activeOpacity={0.7}
               >
                 <Ionicons name="close-circle" size={14} color={TEAL} />

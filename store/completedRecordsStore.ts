@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { MarkerHighlight } from './recordStore';
 
 export type CompletedRecord = {
   id: string;
@@ -13,6 +14,7 @@ export type CompletedRecord = {
   tags: string[];
   bookmarkCount: number;
   bookmarked: boolean;
+  markerHighlights: MarkerHighlight[];
 };
 
 type CompletedRecordsState = {
@@ -34,6 +36,7 @@ export const useCompletedRecordsStore = create<CompletedRecordsState>((set) => (
           date: new Date(),
           bookmarkCount: 0,
           bookmarked: false,
+          markerHighlights: record.markerHighlights ?? [],
         },
         ...state.records,
       ],

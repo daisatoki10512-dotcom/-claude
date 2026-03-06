@@ -16,6 +16,9 @@ export type AIAnalysisResult = {
   insights: AIInsight[];     // 3 insight cards for だいさんへメッセージ
 };
 
+// ── Highlight range ────────────────────────────────────────────
+export type MarkerHighlight = { start: number; end: number };
+
 // ── Record Input Data ──────────────────────────────────────────
 type RecordState = {
   // Input from each step
@@ -26,6 +29,7 @@ type RecordState = {
   desireText: string;
   tags: string[];
   moodFaceType: 1 | 2 | 3 | 4 | 5;
+  markerHighlights: MarkerHighlight[];
 
   // AI analysis result
   aiResult: AIAnalysisResult | null;
@@ -39,6 +43,7 @@ type RecordState = {
   setDesire: (text: string) => void;
   setTags: (tags: string[]) => void;
   setMoodFaceType: (t: 1 | 2 | 3 | 4 | 5) => void;
+  setMarkerHighlights: (h: MarkerHighlight[]) => void;
   setAIResult: (result: AIAnalysisResult) => void;
   setAnalysisError: (error: string | null) => void;
   reset: () => void;
@@ -52,6 +57,7 @@ const initialState = {
   desireText: '',
   tags: [],
   moodFaceType: 3 as 1 | 2 | 3 | 4 | 5,
+  markerHighlights: [] as MarkerHighlight[],
   aiResult: null,
   analysisError: null,
 };
@@ -66,6 +72,7 @@ export const useRecordStore = create<RecordState>((set) => ({
   setDesire: (text) => set({ desireText: text }),
   setTags: (tags) => set({ tags }),
   setMoodFaceType: (t) => set({ moodFaceType: t }),
+  setMarkerHighlights: (h) => set({ markerHighlights: h }),
   setAIResult: (result) => set({ aiResult: result, analysisError: null }),
   setAnalysisError: (error) => set({ analysisError: error }),
   reset: () => set(initialState),

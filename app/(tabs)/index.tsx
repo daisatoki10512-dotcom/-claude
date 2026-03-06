@@ -15,6 +15,7 @@ import FaceIcon, { FaceType } from '../../components/ui/FaceIcon';
 import { useCompletedRecordsStore, CompletedRecord } from '../../store/completedRecordsStore';
 import { BookmarkIcon, TagIcon, PenIcon } from '../../components/ui/AppIcons';
 import { useRecordStore } from '../../store/recordStore';
+import MarkedText from '../../components/ui/MarkedText';
 
 const { width } = Dimensions.get('window');
 
@@ -75,8 +76,9 @@ const MOOD_FACE_TYPE: Record<CompletedRecord['moodType'], FaceType> = {
 // ── Today's record card ────────────────────────────────
 function TodayRecordCard({ record, onToggleBookmark }: { record: CompletedRecord; onToggleBookmark: () => void }) {
   const faceType = MOOD_FACE_TYPE[record.moodType];
-  const bodyText = record.detail[0] ?? '';
+  const bodyText = record.detail.join('\n\n');
   const categoryChips = [...record.emotionChips, ...record.eventChips];
+  const hasMarkers = record.markerHighlights?.length > 0;
 
   return (
     <View style={styles.recordCard}>
@@ -93,9 +95,14 @@ function TodayRecordCard({ record, onToggleBookmark }: { record: CompletedRecord
         </TouchableOpacity>
       </View>
 
-      {/* AI body text (3 lines max) */}
+      {/* AI body text (3 lines max) — マーカー付き */}
       {!!bodyText && (
-        <Text style={styles.recordBody} numberOfLines={3}>{bodyText}</Text>
+        <MarkedText
+          style={styles.recordBody}
+          numberOfLines={3}
+          text={bodyText}
+          highlights={record.markerHighlights ?? []}
+        />
       )}
 
       {/* Category chips: emotions + event categories */}
