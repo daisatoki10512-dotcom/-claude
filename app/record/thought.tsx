@@ -13,6 +13,7 @@ import { router } from 'expo-router';
 import { useRecordStore } from '../../store/recordStore';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import RecordHeader, { SCREEN_BG } from '../../components/RecordHeader';
 
 const BG_TOP      = '#E5F5EF';
 const BG_BOT      = '#DDF0E8';
@@ -20,45 +21,20 @@ const TEXT_PRI    = '#1A1A1A';
 const TEXT_SEC    = '#6B7280';
 const TEAL        = '#2AA090';
 const TEAL_DARK   = '#1A7063';
-const TOTAL_STEPS = 8;
-const CURRENT     = 4;
-
-function StepDots() {
-  return (
-    <View style={styles.dots}>
-      {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
-        <View
-          key={i}
-          style={[styles.dot, i < CURRENT ? styles.dotActive : styles.dotInactive]}
-        />
-      ))}
-    </View>
-  );
-}
-
 export default function ThoughtScreen() {
   const [text, setText] = useState('');
   const canNext = text.trim().length > 0;
   const setThought = useRecordStore(s => s.setThought);
 
   return (
-    <LinearGradient colors={[BG_TOP, BG_BOT]} style={styles.gradient}>
+    <View style={styles.root}>
       <SafeAreaView style={styles.safe}>
         <KeyboardAvoidingView
           style={styles.kav}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           keyboardVerticalOffset={0}
         >
-          {/* ヘッダー */}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
-              <Ionicons name="chevron-back" size={24} color={TEXT_PRI} />
-            </TouchableOpacity>
-            <StepDots />
-            <TouchableOpacity onPress={() => router.dismissAll()} hitSlop={12}>
-              <Ionicons name="close" size={24} color={TEXT_PRI} />
-            </TouchableOpacity>
-          </View>
+          <RecordHeader current={4} />
 
           {/* コンテンツ */}
           <View style={styles.content}>
@@ -100,33 +76,14 @@ export default function ThoughtScreen() {
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  gradient: { flex: 1 },
-  safe:     { flex: 1 },
-  kav:      { flex: 1 },
-
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 8,
-  },
-  dots: {
-    flexDirection: 'row',
-    gap: 4,
-    flex: 1,
-    justifyContent: 'center',
-    marginHorizontal: 8,
-  },
-  dot: { height: 6, borderRadius: 3 },
-  dotActive:   { width: 24, backgroundColor: TEAL },
-  dotInactive: { width: 14, backgroundColor: '#C5DDD8' },
+  root: { flex: 1, backgroundColor: SCREEN_BG },
+  safe: { flex: 1 },
+  kav:  { flex: 1 },
 
   content: {
     flex: 1,
