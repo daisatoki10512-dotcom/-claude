@@ -110,7 +110,7 @@ export default function SummaryScreen() {
           current={7}
           rightExtra={
             <TouchableOpacity hitSlop={12}>
-              <Ionicons name="bookmark-outline" size={22} color={TEXT_PRI} />
+              <Ionicons name="bookmark-outline" size={32} color={TEXT_PRI} />
             </TouchableOpacity>
           }
         />

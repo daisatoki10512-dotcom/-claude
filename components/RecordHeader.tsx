@@ -29,7 +29,7 @@ export default function RecordHeader({
         hitSlop={12}
         style={styles.side}
       >
-        <Ionicons name="chevron-back" size={24} color={TEXT_PRI} />
+        <Ionicons name="chevron-back" size={32} color={TEXT_PRI} />
       </TouchableOpacity>
 
       {/* 中央: ステップドット */}
@@ -49,7 +49,7 @@ export default function RecordHeader({
           onPress={onClose ?? (() => router.dismissAll())}
           hitSlop={12}
         >
-          <Ionicons name="close" size={24} color={TEXT_PRI} />
+          <Ionicons name="close" size={32} color={TEXT_PRI} />
         </TouchableOpacity>
       </View>
     </View>
