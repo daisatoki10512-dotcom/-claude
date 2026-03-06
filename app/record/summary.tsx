@@ -14,14 +14,15 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Polyline } from 'react-native-svg';
 import { useRecordStore, AIAnalysisResult } from '../../store/recordStore';
 import InfoModal from '../../components/InfoModal';
+import RecordHeader, { SCREEN_BG } from '../../components/RecordHeader';
 
 // ── Colors ────────────────────────────────────────────
 const BG_TOP    = '#E5F5EF';
 const BG_BOT    = '#DDF0E8';
 const TEXT_PRI  = '#1A1A1A';
 const TEXT_SEC  = '#6B7280';
-const TEAL      = '#2AA090';
-const TEAL_DARK = '#1A7063';
+const TEAL      = '#14CBB4';
+const TEAL_DARK = '#134E4A';
 const WHITE     = '#FFFFFF';
 
 const TOTAL_STEPS = 8;
@@ -48,19 +49,6 @@ const MOOD_FACE: Record<AIAnalysisResult['moodType'], string> = {
 };
 
 // ── Sub-components ────────────────────────────────────
-
-function StepDots() {
-  return (
-    <View style={styles.dots}>
-      {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
-        <View
-          key={i}
-          style={[styles.dot, i < CURRENT ? styles.dotActive : styles.dotInactive]}
-        />
-      ))}
-    </View>
-  );
-}
 
 function InsightIcon() {
   return (
@@ -101,12 +89,12 @@ export default function SummaryScreen() {
   // AI結果がない場合（API呼び出し中 or エラー）
   if (!aiResult && !analysisError) {
     return (
-      <LinearGradient colors={[BG_TOP, BG_BOT]} style={styles.gradient}>
+      <View style={styles.root}>
         <SafeAreaView style={[styles.safe, { alignItems: 'center', justifyContent: 'center' }]}>
           <ActivityIndicator size="large" color={TEAL} />
           <Text style={{ color: TEXT_SEC, marginTop: 12 }}>分析中...</Text>
         </SafeAreaView>
-      </LinearGradient>
+      </View>
     );
   }
 
@@ -116,24 +104,16 @@ export default function SummaryScreen() {
   const moodFace       = MOOD_FACE[result.moodType];
 
   return (
-    <LinearGradient colors={[BG_TOP, BG_BOT]} style={styles.gradient}>
+    <View style={styles.root}>
       <SafeAreaView style={styles.safe}>
-
-        {/* ── ヘッダー ─────────────────────────────── */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
-            <Ionicons name="chevron-back" size={24} color={TEXT_PRI} />
-          </TouchableOpacity>
-          <StepDots />
-          <View style={styles.headerRight}>
+        <RecordHeader
+          current={7}
+          rightExtra={
             <TouchableOpacity hitSlop={12}>
               <Ionicons name="bookmark-outline" size={22} color={TEXT_PRI} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.dismissAll()} hitSlop={12}>
-              <Ionicons name="close" size={24} color={TEXT_PRI} />
-            </TouchableOpacity>
-          </View>
-        </View>
+          }
+        />
 
         {/* ── スクロール領域 ────────────────────────── */}
         <ScrollView
@@ -241,39 +221,14 @@ export default function SummaryScreen() {
         visible={infoModalVisible}
         onClose={() => setInfoModalVisible(false)}
       />
-    </LinearGradient>
+    </View>
   );
 }
 
 // ── Styles ────────────────────────────────────────────
 const styles = StyleSheet.create({
-  gradient: { flex: 1 },
-  safe:     { flex: 1 },
-
-  // Header
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 8,
-  },
-  dots: {
-    flexDirection: 'row',
-    gap: 4,
-    flex: 1,
-    justifyContent: 'center',
-    marginHorizontal: 8,
-  },
-  dot: { height: 6, borderRadius: 3 },
-  dotActive:   { width: 24, backgroundColor: TEAL },
-  dotInactive: { width: 14, backgroundColor: '#C5DDD8' },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
+  root: { flex: 1, backgroundColor: SCREEN_BG },
+  safe: { flex: 1 },
 
   // Scroll
   scroll: {
@@ -437,13 +392,19 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   nextBtnWrapper: {
-    borderRadius: 50,
+    borderRadius: 20,
     overflow: 'hidden',
+    shadowColor: '#667EEA',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.19,
+    shadowRadius: 16,
+    elevation: 5,
   },
   nextBtn: {
-    paddingVertical: 18,
+    height: 56,
     alignItems: 'center',
-    borderRadius: 50,
+    justifyContent: 'center',
+    borderRadius: 20,
   },
   nextBtnText: {
     fontSize: 17,

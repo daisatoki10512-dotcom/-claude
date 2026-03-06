@@ -15,6 +15,7 @@ import { router } from 'expo-router';
 import { useRecordStore } from '../../store/recordStore';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import RecordHeader, { SCREEN_BG } from '../../components/RecordHeader';
 
 if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
@@ -25,8 +26,8 @@ const BG_TOP          = '#E5F5EF';
 const BG_BOT          = '#DDF0E8';
 const TEXT_PRI        = '#1A1A1A';
 const TEXT_SEC        = '#6B7280';
-const TEAL            = '#2AA090';
-const TEAL_DARK       = '#1A7063';
+const TEAL            = '#14CBB4';
+const TEAL_DARK       = '#134E4A';
 const CHIP_DEF_BG     = '#FFFFFF';
 const CHIP_DEF_BORDER = '#E5E7EB';
 const CHIP_SEL_BG     = '#FFFFFF';
@@ -77,22 +78,6 @@ const CATEGORIES: Category[] = [
 ];
 
 // ── Sub-components ────────────────────────────────────
-
-function StepDots({ current, total }: { current: number; total: number }) {
-  return (
-    <View style={styles.dots}>
-      {Array.from({ length: total }).map((_, i) => (
-        <View
-          key={i}
-          style={[
-            styles.dot,
-            i < current ? styles.dotActive : styles.dotInactive,
-          ]}
-        />
-      ))}
-    </View>
-  );
-}
 
 function ReasonChip({
   label,
@@ -192,19 +177,9 @@ export default function ReasonScreen() {
   const canNext = selected.size > 0 || customInput.trim().length > 0;
 
   return (
-    <LinearGradient colors={[BG_TOP, BG_BOT]} style={styles.gradient}>
+    <View style={styles.root}>
       <SafeAreaView style={styles.safe}>
-
-        {/* ── ヘッダー ─────────────────────────────── */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
-            <Ionicons name="chevron-back" size={24} color={TEXT_PRI} />
-          </TouchableOpacity>
-          <StepDots current={2} total={TOTAL_STEPS} />
-          <TouchableOpacity onPress={() => router.dismissAll()} hitSlop={12}>
-            <Ionicons name="close" size={24} color={TEXT_PRI} />
-          </TouchableOpacity>
-        </View>
+        <RecordHeader current={2} />
 
         {/* ── スクロール領域 ────────────────────────── */}
         <ScrollView
@@ -268,43 +243,14 @@ export default function ReasonScreen() {
         </View>
 
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
 // ── Styles ────────────────────────────────────────────
 const styles = StyleSheet.create({
-  gradient: { flex: 1 },
-  safe:     { flex: 1 },
-
-  // Header
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 8,
-  },
-  dots: {
-    flexDirection: 'row',
-    gap: 4,
-    flex: 1,
-    justifyContent: 'center',
-    marginHorizontal: 8,
-  },
-  dot: {
-    height: 6,
-    borderRadius: 3,
-  },
-  dotActive: {
-    width: 24,
-    backgroundColor: TEAL,
-  },
-  dotInactive: {
-    width: 14,
-    backgroundColor: '#C5DDD8',
-  },
+  root: { flex: 1, backgroundColor: SCREEN_BG },
+  safe: { flex: 1 },
 
   // Scroll
   scroll: {
@@ -440,13 +386,19 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   nextBtnWrapper: {
-    borderRadius: 50,
+    borderRadius: 20,
     overflow: 'hidden',
+    shadowColor: '#667EEA',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.19,
+    shadowRadius: 16,
+    elevation: 5,
   },
   nextBtn: {
-    paddingVertical: 18,
+    height: 56,
     alignItems: 'center',
-    borderRadius: 50,
+    justifyContent: 'center',
+    borderRadius: 20,
   },
   nextBtnText: {
     fontSize: 17,
