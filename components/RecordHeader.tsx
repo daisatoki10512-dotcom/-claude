@@ -76,13 +76,13 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   dots: {
-    flex: 1,
+    width: 160,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 4,
   },
-  dot:         { height: 6, borderRadius: 3 },
-  dotActive:   { width: 24, backgroundColor: TEAL },
-  dotInactive: { width: 14, backgroundColor: '#C5DDD8' },
+  dot:         { width: 16.5, height: 6, borderRadius: 3 },
+  dotActive:   { backgroundColor: TEAL },
+  dotInactive: { backgroundColor: '#C5DDD8' },
 });
