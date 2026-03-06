@@ -174,6 +174,7 @@ export default function HomeScreen() {
           <>
             <Text style={styles.sectionTitle}>今どんな気持ちですか？</Text>
             <View style={styles.moodCard}>
+              <View style={styles.moodIconsFrame}>
               <View style={styles.moodRow}>
                 {MOODS.map((mood, i) => (
                   <TouchableOpacity
@@ -192,6 +193,7 @@ export default function HomeScreen() {
                     />
                   </TouchableOpacity>
                 ))}
+              </View>
               </View>
               <TouchableOpacity
                 style={[
@@ -300,16 +302,16 @@ const styles = StyleSheet.create({
     backgroundColor: CARD_BG,
     borderRadius: 20,
     padding: 16,
-    height: 206,
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
     marginBottom: 28,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 16,
     elevation: 2,
+  },
+  moodIconsFrame: {
+    paddingVertical: 32,
+    width: '100%',
   },
   moodRow: {
     flexDirection: 'row',
