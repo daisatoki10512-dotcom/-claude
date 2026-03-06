@@ -242,8 +242,8 @@ export default function HomeScreen() {
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* ── FAB (記録ボタン) ─────────────────────────── */}
-      <TouchableOpacity
+      {/* ── FAB (記録ボタン) — 初回記録後のみ表示 ────── */}
+      {todayRecord && <TouchableOpacity
         style={styles.fab}
         activeOpacity={0.85}
         onPress={() => router.push('/record/emotion')}
@@ -256,7 +256,7 @@ export default function HomeScreen() {
         >
           <Ionicons name="pencil" size={24} color="#FFFFFF" />
         </LinearGradient>
-      </TouchableOpacity>
+      </TouchableOpacity>}
     </SafeAreaView>
   );
 }
