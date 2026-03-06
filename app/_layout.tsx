@@ -87,6 +87,14 @@ export default function RootLayout() {
             animation: 'fade',
           }}
         />
+        <Stack.Screen
+          name="chat"
+          options={{
+            headerShown: false,
+            presentation: 'modal',
+            animation: 'slide_from_bottom',
+          }}
+        />
       </Stack>
     </>
   );

@@ -161,11 +161,20 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* ── 挨拶 ─────────────────────────────────── */}
-        <View style={styles.greeting}>
-          <Text style={styles.greetingTitle}>こんにちは、 だいさん</Text>
-          <Text style={styles.greetingSubtitle}>
-            今日を穏やかに過ごすために{'\n'}残りの時間はゆっくり過ごしましょうね。
-          </Text>
+        <View style={styles.greetingRow}>
+          <View style={styles.greeting}>
+            <Text style={styles.greetingTitle}>こんにちは、 だいさん</Text>
+            <Text style={styles.greetingSubtitle}>
+              今日を穏やかに過ごすために{'\n'}残りの時間はゆっくり過ごしましょうね。
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.chatBtn}
+            activeOpacity={0.8}
+            onPress={() => router.push('/chat')}
+          >
+            <Ionicons name="chatbubble-ellipses-outline" size={22} color={TEAL} />
+          </TouchableOpacity>
         </View>
 
         {/* ── 今日の記録 or 気持ち選択 ───────────────── */}
@@ -259,7 +268,24 @@ const styles = StyleSheet.create({
   scrollContent: { paddingHorizontal: 20, paddingTop: 8 },
 
   // Greeting
-  greeting: { marginTop: 16, marginBottom: 28 },
+  greetingRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginTop: 16,
+    marginBottom: 28,
+  },
+  greeting: { flex: 1 },
+  chatBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#E5F5EF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: '#C5DDD8',
+  },
   greetingTitle: {
     fontSize: 28,
     fontWeight: '700',
