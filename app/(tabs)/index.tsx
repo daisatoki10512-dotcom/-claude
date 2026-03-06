@@ -45,36 +45,23 @@ function formatDateLabel(date: Date): string {
   return `今日、${m}/${d}（${w}）の記録`;
 }
 
-// ── Mood gradient colors ───────────────────────────────
-const MOOD_COLORS: Record<CompletedRecord['moodType'], [string, string]> = {
-  negative: ['#90B8F8', '#4A8EDF'],
-  neutral:  ['#B8D4F8', '#7098D8'],
-  positive: ['#90E8C8', '#2AA090'],
-};
-const MOOD_FACE: Record<CompletedRecord['moodType'], string> = {
-  negative: '😟',
-  neutral:  '😐',
-  positive: '😊',
+// ── moodType → FaceType mapping ───────────────────────
+const MOOD_FACE_TYPE: Record<CompletedRecord['moodType'], FaceType> = {
+  negative: 2,
+  neutral:  3,
+  positive: 4,
 };
 
 // ── Today's record card ────────────────────────────────
 function TodayRecordCard({ record }: { record: CompletedRecord }) {
-  const gradientColors = MOOD_COLORS[record.moodType];
-  const moodFace = MOOD_FACE[record.moodType];
+  const faceType = MOOD_FACE_TYPE[record.moodType];
   const previewText = record.detail[0] ?? '';
 
   return (
     <View style={styles.recordCard}>
       {/* Top row: mood icon + title + bookmark */}
       <View style={styles.recordTopRow}>
-        <LinearGradient
-          colors={gradientColors}
-          style={styles.moodCircle}
-          start={{ x: 0.2, y: 0.1 }}
-          end={{ x: 0.8, y: 0.9 }}
-        >
-          <Text style={styles.moodFace}>{moodFace}</Text>
-        </LinearGradient>
+        <FaceIcon type={faceType} active size={48} />
 
         <Text style={styles.recordTitle} numberOfLines={3}>
           {record.eventText || record.moodLabel}
@@ -91,7 +78,7 @@ function TodayRecordCard({ record }: { record: CompletedRecord }) {
       {/* Bookmark count badge */}
       {record.bookmarkCount > 0 && (
         <View style={styles.bookmarkBadge}>
-          <Ionicons name="bookmark" size={12} color={TEAL} />
+          <Ionicons name="person-circle" size={16} color="#FFFFFF" />
           <Text style={styles.bookmarkBadgeText}>{record.bookmarkCount}</Text>
         </View>
       )}
@@ -242,8 +229,8 @@ export default function HomeScreen() {
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* ── FAB (記録ボタン) ─────────────────────────── */}
-      <TouchableOpacity
+      {/* ── FAB (記録ボタン) — 初回記録後のみ表示 ────── */}
+      {todayRecord && <TouchableOpacity
         style={styles.fab}
         activeOpacity={0.85}
         onPress={() => router.push('/record/emotion')}
@@ -256,7 +243,7 @@ export default function HomeScreen() {
         >
           <Ionicons name="pencil" size={24} color="#FFFFFF" />
         </LinearGradient>
-      </TouchableOpacity>
+      </TouchableOpacity>}
     </SafeAreaView>
   );
 }
@@ -376,15 +363,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: 12,
   },
-  moodCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  moodFace: { fontSize: 24 },
   recordTitle: {
     flex: 1,
     fontSize: 16,
@@ -401,7 +379,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#E5F5EF',
+    backgroundColor: TEAL,
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -410,7 +388,7 @@ const styles = StyleSheet.create({
   bookmarkBadgeText: {
     fontSize: 13,
     fontWeight: '600',
-    color: TEAL,
+    color: '#FFFFFF',
   },
   chipRow: {
     flexDirection: 'row',
