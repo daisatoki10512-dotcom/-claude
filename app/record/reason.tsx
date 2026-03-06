@@ -17,6 +17,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import RecordHeader, { SCREEN_BG } from '../../components/RecordHeader';
 import SelectChip from '../../components/SelectChip';
+import {
+  HeartHandshakeIcon,
+  BriefcaseIcon,
+  HeartIcon,
+  GlobeIcon,
+  ClockIcon,
+} from '../../components/ui/AppIcons';
 
 if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
@@ -32,7 +39,7 @@ const TOTAL_STEPS = 8;
 type Category = {
   id: string;
   label: string;
-  icon: string;
+  Icon: React.ComponentType<{ size?: number; color?: string }>;
   items: string[];
 };
 
@@ -40,31 +47,31 @@ const CATEGORIES: Category[] = [
   {
     id: 'relationship',
     label: '人間関係',
-    icon: 'person-outline',
+    Icon: HeartHandshakeIcon,
     items: ['家族', '友人', '恋人・パートナー', '学校関係', '職場関係', '隣人', 'オンライン・SNS', 'コミュニティ'],
   },
   {
     id: 'work',
     label: '仕事・学校',
-    icon: 'briefcase-outline',
+    Icon: BriefcaseIcon,
     items: ['仕事量', '締め切り', '職場の雰囲気', '上司・同僚', '給与・評価', '勉強・課題', '試験・成績', '進路'],
   },
   {
     id: 'mind',
     label: '心と体',
-    icon: 'heart-outline',
+    Icon: HeartIcon,
     items: ['睡眠不足', '体調不良', '疲労', 'メンタル', '食欲', '運動不足', '病気・症状'],
   },
   {
     id: 'life',
     label: '生活・環境',
-    icon: 'globe-outline',
+    Icon: GlobeIcon,
     items: ['お金・経済', '住環境', '家事・育児', '交通・移動', '天気・季節', '騒音・環境', 'ひとり暮らし'],
   },
   {
     id: 'future',
     label: '将来・その他',
-    icon: 'time-outline',
+    Icon: ClockIcon,
     items: ['将来への不安', '目標・夢', 'キャリア', '人生の変化', 'その他'],
   },
 ];
@@ -92,7 +99,7 @@ function CategoryAccordion({
         activeOpacity={0.75}
       >
         <View style={styles.accordionHeaderLeft}>
-          <Ionicons name={category.icon as any} size={22} color={TEXT_PRI} style={styles.categoryIcon} />
+          <category.Icon size={22} color={TEXT_PRI} />
           <Text style={styles.categoryLabel}>{category.label}</Text>
         </View>
         <Ionicons

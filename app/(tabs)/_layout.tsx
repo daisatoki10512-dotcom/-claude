@@ -1,30 +1,28 @@
 import { Tabs } from 'expo-router';
+import { View, Text, StyleSheet } from 'react-native';
 import {
-  View,
-  Text,
-  StyleSheet,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+  HomeIcon,
+  InsightsIcon,
+  BookmarkTabIcon,
+  RecordsIcon,
+  MyPageIcon,
+} from '../../components/ui/AppIcons';
 
-const TEAL = '#0F766E';
+const TEAL    = '#0F766E';
 const INACTIVE = '#9CA3AF';
-const BG = '#FFFFFF';
+const BG      = '#FFFFFF';
 
 type TabIconProps = {
-  name: React.ComponentProps<typeof Ionicons>['name'];
+  Icon: React.ComponentType<{ size?: number; color?: string }>;
   focused: boolean;
   label: string;
 };
 
-function TabIcon({ name, focused, label }: TabIconProps) {
+function TabIcon({ Icon, focused, label }: TabIconProps) {
   return (
     <View style={styles.tabItem}>
       <View style={styles.iconFrame}>
-        <Ionicons
-          name={name}
-          size={24}
-          color={focused ? TEAL : INACTIVE}
-        />
+        <Icon size={24} color={focused ? TEAL : INACTIVE} />
       </View>
       <Text
         style={[styles.tabLabel, { color: focused ? TEAL : INACTIVE }]}
@@ -49,7 +47,7 @@ export default function TabLayout() {
         name="index"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name={focused ? 'home' : 'home-outline'} focused={focused} label="ホーム" />
+            <TabIcon Icon={HomeIcon} focused={focused} label="ホーム" />
           ),
         }}
       />
@@ -57,7 +55,7 @@ export default function TabLayout() {
         name="insights"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name={focused ? 'bulb' : 'bulb-outline'} focused={focused} label="気づき" />
+            <TabIcon Icon={InsightsIcon} focused={focused} label="気づき" />
           ),
         }}
       />
@@ -65,7 +63,7 @@ export default function TabLayout() {
         name="bookmarks"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name={focused ? 'bookmark' : 'bookmark-outline'} focused={focused} label="ブックマーク" />
+            <TabIcon Icon={BookmarkTabIcon} focused={focused} label="ブックマーク" />
           ),
         }}
       />
@@ -73,7 +71,7 @@ export default function TabLayout() {
         name="records"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name={focused ? 'document-text' : 'document-text-outline'} focused={focused} label="記録" />
+            <TabIcon Icon={RecordsIcon} focused={focused} label="記録" />
           ),
         }}
       />
@@ -81,7 +79,7 @@ export default function TabLayout() {
         name="mypage"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name={focused ? 'person' : 'person-outline'} focused={focused} label="マイページ" />
+            <TabIcon Icon={MyPageIcon} focused={focused} label="マイページ" />
           ),
         }}
       />
