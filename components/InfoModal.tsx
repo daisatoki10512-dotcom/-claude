@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-const TEAL      = '#2AA090';
+const TEAL      = '#0F766E';
 const TEAL_DARK = '#1A7063';
 const TEXT_PRI  = '#1A1A1A';
 const TEXT_SEC  = '#6B7280';

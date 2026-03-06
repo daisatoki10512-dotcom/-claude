@@ -22,7 +22,7 @@ const BG_TOP    = '#E5F5EF';
 const BG_BOT    = '#DDF0E8';
 const TEXT_PRI  = '#1A1A1A';
 const TEXT_SEC  = '#6B7280';
-const TEAL      = '#14CBB4';
+const TEAL      = '#0F766E';
 const TEAL_DARK = '#134E4A';
 const WHITE     = '#FFFFFF';
 
@@ -183,7 +183,7 @@ export default function TaggingScreen() {
               style={styles.completeBtnWrapper}
             >
               <LinearGradient
-                colors={[TEAL_DARK, TEAL]}
+                colors={['#134E4A', '#14CBB4']}
                 style={styles.completeBtn}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}

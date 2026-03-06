@@ -14,7 +14,7 @@ const BG = '#E5F5EF';
 const CARD_BG = '#FFFFFF';
 const TEXT_PRIMARY = '#1A1A1A';
 const TEXT_SECONDARY = '#6B7280';
-const TEAL = '#2AA090';
+const TEAL = '#0F766E';
 
 const newInsights = [
   {

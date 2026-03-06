@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-const TEAL = '#2AA090';
+const TEAL = '#0F766E';
 const INACTIVE = '#9CA3AF';
 const BG = '#FFFFFF';
 
