@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
     lineHeight: 39,
   },
   greetingMessage: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: '400',
     color: TEXT_SECONDARY,
     lineHeight: 25.6,
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   cardBodyGray: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '400',
     color: TEXT_GRAY,
     lineHeight: 22.4,
