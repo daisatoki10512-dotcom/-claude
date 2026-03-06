@@ -14,6 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import FaceIcon, { FaceType } from '../../components/ui/FaceIcon';
 import { useCompletedRecordsStore, CompletedRecord } from '../../store/completedRecordsStore';
 import { BookmarkIcon, TagIcon, PenIcon } from '../../components/ui/AppIcons';
+import { useRecordStore } from '../../store/recordStore';
 
 const { width } = Dimensions.get('window');
 
@@ -128,6 +129,7 @@ function TodayRecordCard({ record, onToggleBookmark }: { record: CompletedRecord
 export default function HomeScreen() {
   const [selectedMood, setSelectedMood] = useState<number | null>(null);
   const { records, toggleBookmark } = useCompletedRecordsStore();
+  const setMoodFaceType = useRecordStore(s => s.setMoodFaceType);
 
   const today = new Date();
   const todayRecord = records.find((r) => {
@@ -197,7 +199,10 @@ export default function HomeScreen() {
                 style={styles.recordBtnWrapper}
                 disabled={selectedMood === null}
                 activeOpacity={0.8}
-                onPress={() => router.push('/record/emotion')}
+                onPress={() => {
+                  if (selectedMood !== null) setMoodFaceType(MOODS[selectedMood].faceType);
+                  router.push('/record/emotion');
+                }}
               >
                 <LinearGradient
                   colors={selectedMood !== null ? ['#134E4A', '#14CBB4'] : ['#E5E7EB', '#E5E7EB']}

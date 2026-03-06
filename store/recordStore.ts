@@ -25,6 +25,7 @@ type RecordState = {
   thoughtText: string;
   desireText: string;
   tags: string[];
+  moodFaceType: 1 | 2 | 3 | 4 | 5;
 
   // AI analysis result
   aiResult: AIAnalysisResult | null;
@@ -37,6 +38,7 @@ type RecordState = {
   setThought: (text: string) => void;
   setDesire: (text: string) => void;
   setTags: (tags: string[]) => void;
+  setMoodFaceType: (t: 1 | 2 | 3 | 4 | 5) => void;
   setAIResult: (result: AIAnalysisResult) => void;
   setAnalysisError: (error: string | null) => void;
   reset: () => void;
@@ -49,6 +51,7 @@ const initialState = {
   thoughtText: '',
   desireText: '',
   tags: [],
+  moodFaceType: 3 as 1 | 2 | 3 | 4 | 5,
   aiResult: null,
   analysisError: null,
 };
@@ -62,6 +65,7 @@ export const useRecordStore = create<RecordState>((set) => ({
   setThought: (text) => set({ thoughtText: text }),
   setDesire: (text) => set({ desireText: text }),
   setTags: (tags) => set({ tags }),
+  setMoodFaceType: (t) => set({ moodFaceType: t }),
   setAIResult: (result) => set({ aiResult: result, analysisError: null }),
   setAnalysisError: (error) => set({ analysisError: error }),
   reset: () => set(initialState),
