@@ -55,7 +55,8 @@ const MOOD_FACE_TYPE: Record<CompletedRecord['moodType'], FaceType> = {
 // ── Today's record card ────────────────────────────────
 function TodayRecordCard({ record }: { record: CompletedRecord }) {
   const faceType = MOOD_FACE_TYPE[record.moodType];
-  const previewText = record.detail[0] ?? '';
+  const previewText = record.detail[0] || record.eventText;
+  const allChips = [...record.emotionChips, ...record.eventChips];
 
   return (
     <View style={styles.recordCard}>
@@ -73,25 +74,22 @@ function TodayRecordCard({ record }: { record: CompletedRecord }) {
       </View>
 
       {/* Detail preview */}
-      <Text style={styles.recordBody} numberOfLines={3}>{previewText}</Text>
+      {!!previewText && (
+        <Text style={styles.recordBody} numberOfLines={3}>{previewText}</Text>
+      )}
 
-      {/* Bookmark count badge */}
+      {/* AI chat count badge */}
       {record.bookmarkCount > 0 && (
         <View style={styles.bookmarkBadge}>
-          <Ionicons name="person-circle" size={16} color="#FFFFFF" />
+          <Ionicons name="person" size={13} color="#FFFFFF" />
           <Text style={styles.bookmarkBadgeText}>{record.bookmarkCount}</Text>
         </View>
       )}
 
-      {/* Emotion chips */}
-      {record.emotionChips.length > 0 && (
+      {/* Emotion + event chips */}
+      {allChips.length > 0 && (
         <View style={styles.chipRow}>
-          {record.emotionChips.map((chip) => (
-            <View key={chip} style={styles.chip}>
-              <Text style={styles.chipText}>{chip}</Text>
-            </View>
-          ))}
-          {record.eventChips.map((chip) => (
+          {allChips.map((chip) => (
             <View key={chip} style={styles.chip}>
               <Text style={styles.chipText}>{chip}</Text>
             </View>

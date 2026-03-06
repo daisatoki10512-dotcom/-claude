@@ -13,19 +13,11 @@ import { useRecordStore } from '../../store/recordStore';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import RecordHeader, { SCREEN_BG } from '../../components/RecordHeader';
+import SelectChip from '../../components/SelectChip';
 
 // ── Colors ────────────────────────────────────────────
-const BG_TOP    = '#E5F5EF';
-const BG_BOT    = '#DDF0E8';
 const TEXT_PRI  = '#1A1A1A';
 const TEXT_SEC  = '#6B7280';
-const TEAL      = '#0F766E';
-const TEAL_DARK = '#1A7063';
-const CHIP_DEF_BG     = '#FFFFFF';
-const CHIP_DEF_BORDER = '#E5E7EB';
-const CHIP_SEL_BG     = '#FFFFFF';
-const CHIP_SEL_BORDER = TEAL;
-const CHIP_SEL_TEXT   = TEAL;
 
 // ── Data ──────────────────────────────────────────────
 const POSITIVE_EMOTIONS = [
@@ -42,34 +34,6 @@ const NEGATIVE_EMOTIONS = [
 ];
 
 const TOTAL_STEPS = 8;
-
-// ── Sub-components ────────────────────────────────────
-
-/** 感情チップ */
-function EmotionChip({
-  label,
-  selected,
-  onPress,
-}: {
-  label: string;
-  selected: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <TouchableOpacity
-      style={[styles.chip, selected ? styles.chipSelected : styles.chipDefault]}
-      onPress={onPress}
-      activeOpacity={0.75}
-    >
-      {selected && (
-        <Ionicons name="checkmark" size={14} color={CHIP_SEL_TEXT} style={styles.chipCheck} />
-      )}
-      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
-}
 
 // ── Main Screen ───────────────────────────────────────
 export default function EmotionScreen() {
@@ -116,7 +80,7 @@ export default function EmotionScreen() {
           <Text style={styles.categoryLabel}>ポジティブ</Text>
           <View style={styles.chipRow}>
             {POSITIVE_EMOTIONS.map(e => (
-              <EmotionChip
+              <SelectChip
                 key={e}
                 label={e}
                 selected={selected.has(e)}
@@ -129,7 +93,7 @@ export default function EmotionScreen() {
           <Text style={styles.categoryLabel}>ネガティブ</Text>
           <View style={styles.chipRow}>
             {NEGATIVE_EMOTIONS.map(e => (
-              <EmotionChip
+              <SelectChip
                 key={e}
                 label={e}
                 selected={selected.has(e)}
@@ -144,7 +108,7 @@ export default function EmotionScreen() {
               <Text style={styles.categoryLabel}>作成した感情</Text>
               <View style={styles.chipRow}>
                 {customEmotions.map(e => (
-                  <EmotionChip
+                  <SelectChip
                     key={e}
                     label={e}
                     selected={selected.has(e)}
@@ -242,34 +206,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 10,
     marginBottom: 20,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 50,
-    borderWidth: 1.5,
-  },
-  chipDefault: {
-    backgroundColor: CHIP_DEF_BG,
-    borderColor: CHIP_DEF_BORDER,
-  },
-  chipSelected: {
-    backgroundColor: CHIP_SEL_BG,
-    borderColor: CHIP_SEL_BORDER,
-  },
-  chipCheck: {
-    marginRight: 4,
-  },
-  chipText: {
-    fontSize: 15,
-    color: TEXT_PRI,
-    fontWeight: '500',
-  },
-  chipTextSelected: {
-    color: CHIP_SEL_TEXT,
-    fontWeight: '600',
   },
 
   // Custom input
