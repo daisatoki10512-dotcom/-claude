@@ -14,6 +14,7 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRecordStore } from '../../store/recordStore';
+import { useCompletedRecordsStore } from '../../store/completedRecordsStore';
 
 // ── Colors ────────────────────────────────────────────
 const BG_TOP    = '#E5F5EF';
@@ -77,7 +78,8 @@ function TagChip({
 
 // ── Main Screen ───────────────────────────────────────
 export default function TaggingScreen() {
-  const { setTags, reset } = useRecordStore();
+  const { aiResult, eventText, setTags, reset } = useRecordStore();
+  const { addRecord } = useCompletedRecordsStore();
 
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [inputText, setInputText] = useState('');
@@ -99,8 +101,19 @@ export default function TaggingScreen() {
 
   const handleComplete = () => {
     setTags(selectedTags);
+    if (aiResult) {
+      addRecord({
+        moodLabel: aiResult.moodLabel,
+        moodType: aiResult.moodType,
+        eventText,
+        detail: aiResult.detail,
+        emotionChips: aiResult.emotionChips,
+        eventChips: aiResult.eventChips,
+        tags: selectedTags,
+      });
+    }
     reset();
-    router.dismissAll();
+    router.push('/record/complete');
   };
 
   return (
