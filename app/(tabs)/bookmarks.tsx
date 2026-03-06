@@ -11,6 +11,8 @@ import { useState } from 'react';
 import FaceIcon, { FaceType } from '../../components/ui/FaceIcon';
 import { useCompletedRecordsStore, CompletedRecord } from '../../store/completedRecordsStore';
 import { BookmarkIcon, TagIcon } from '../../components/ui/AppIcons';
+import SearchFilterModal, { FilterState, applyFilter } from '../../components/ui/SearchFilterModal';
+import MarkedText from '../../components/ui/MarkedText';
 
 const BG = '#E5F5EF';
 const CARD_BG = '#FFFFFF';
@@ -51,37 +53,48 @@ const TABS = ['記録', 'マーカー', '気づき'];
 
 export default function BookmarksScreen() {
   const [activeTab, setActiveTab] = useState(0);
+  const [filterVisible, setFilterVisible] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<FilterState | null>(null);
   const { records, toggleBookmark } = useCompletedRecordsStore();
 
   const bookmarked = records.filter((r) => r.bookmarked);
-  const grouped = groupByDate(bookmarked);
+  const filtered = activeFilter ? applyFilter(bookmarked, activeFilter) : bookmarked;
+  const grouped = groupByDate(filtered);
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* ヘッダー */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.searchBtn} activeOpacity={0.7}>
-          <Ionicons name="search" size={22} color={TEXT_PRIMARY} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>ブックマーク</Text>
-        <View style={styles.headerRight} />
-      </View>
+      <SearchFilterModal
+        visible={filterVisible}
+        onClose={() => setFilterVisible(false)}
+        records={bookmarked}
+        onApply={(f) => setActiveFilter(f)}
+      />
 
-      {/* タブ切り替え */}
-      <View style={styles.tabContainer}>
-        <View style={styles.tabBar}>
-          {TABS.map((tab, i) => (
-            <TouchableOpacity
-              key={i}
-              style={[styles.tabItem, activeTab === i && styles.tabItemActive]}
-              onPress={() => setActiveTab(i)}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.tabText, activeTab === i && styles.tabTextActive]}>
-                {tab}
-              </Text>
-            </TouchableOpacity>
-          ))}
+      {/* 上部固定: ヘッダー + タブ */}
+      <View style={styles.stickyHeader}>
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.searchBtn} activeOpacity={0.7} onPress={() => setFilterVisible(true)}>
+            <Ionicons name="search" size={22} color={activeFilter ? TEAL : TEXT_PRIMARY} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>ブックマーク</Text>
+          <View style={styles.headerRight} />
+        </View>
+
+        <View style={styles.tabContainer}>
+          <View style={styles.tabBar}>
+            {TABS.map((tab, i) => (
+              <TouchableOpacity
+                key={i}
+                style={[styles.tabItem, activeTab === i && styles.tabItemActive]}
+                onPress={() => setActiveTab(i)}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.tabText, activeTab === i && styles.tabTextActive]}>
+                  {tab}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       </View>
 
@@ -102,7 +115,7 @@ export default function BookmarksScreen() {
               <Text style={styles.dateHeader}>{group.label}</Text>
               {group.records.map((record) => {
                 const faceType = MOOD_FACE_TYPE[record.moodType];
-                const bodyText = record.detail[0] ?? '';
+                const bodyText = record.detail.join('\n\n');
                 const categoryChips = [...record.emotionChips, ...record.eventChips];
 
                 return (
@@ -123,9 +136,12 @@ export default function BookmarksScreen() {
 
                     {/* 本文: AIの振り返り文（3行まで） */}
                     {!!bodyText && (
-                      <Text style={styles.entryDescription} numberOfLines={3}>
-                        {bodyText}
-                      </Text>
+                      <MarkedText
+                        style={styles.entryDescription}
+                        numberOfLines={3}
+                        text={bodyText}
+                        highlights={record.markerHighlights ?? []}
+                      />
                     )}
 
                     {/* カテゴリ: 感情 + 出来事カテゴリ */}
@@ -164,20 +180,26 @@ export default function BookmarksScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: BG },
-
+  stickyHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    backgroundColor: BG,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 12,
-    backgroundColor: BG,
   },
   searchBtn: { width: 36 },
-  headerTitle: { fontSize: 17, fontWeight: '600', color: TEXT_PRIMARY },
+  headerTitle: { fontSize: 17, fontWeight: '700', color: TEXT_PRIMARY },
   headerRight: { width: 36 },
 
-  tabContainer: { paddingHorizontal: 20, marginBottom: 16 },
+  tabContainer: { paddingHorizontal: 20, paddingBottom: 16 },
   tabBar: {
     flexDirection: 'row',
     backgroundColor: '#E5E7EB',
@@ -205,7 +227,7 @@ const styles = StyleSheet.create({
   tabTextActive: { color: TEXT_PRIMARY, fontWeight: '600' },
 
   scrollView: { flex: 1, backgroundColor: BG },
-  scrollContent: { paddingHorizontal: 20 },
+  scrollContent: { paddingHorizontal: 20, paddingTop: 106 },
 
   emptyState: {
     alignItems: 'center',

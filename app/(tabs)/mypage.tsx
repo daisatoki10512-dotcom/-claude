@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     backgroundColor: BG,
   },
   headerLeft: { width: 36 },
-  headerTitle: { fontSize: 17, fontWeight: '600', color: TEXT_PRIMARY },
+  headerTitle: { fontSize: 17, fontWeight: '700', color: TEXT_PRIMARY },
   settingsBtn: { width: 36, alignItems: 'flex-end' },
 
   scrollView: { flex: 1, backgroundColor: BG },

@@ -14,6 +14,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import FaceIcon, { FaceType } from '../../components/ui/FaceIcon';
 import { useCompletedRecordsStore, CompletedRecord } from '../../store/completedRecordsStore';
 import { BookmarkIcon, TagIcon, PenIcon } from '../../components/ui/AppIcons';
+import { useRecordStore } from '../../store/recordStore';
+import MarkedText from '../../components/ui/MarkedText';
 
 const { width } = Dimensions.get('window');
 
@@ -36,6 +38,24 @@ const MOODS: { faceType: FaceType; label: string }[] = [
 
 // Card inner width = screen - scrollPadding(20*2) - cardPadding(16*2), split across 5 icons with 4 gaps of 8px
 const MOOD_CIRCLE_SIZE = Math.floor((width - 40 - 32 - 32) / 5);
+const REVIEW_CARD_WIDTH = width * 0.72;
+
+const REVIEW_CARDS = [
+  {
+    id: 1,
+    bg: '#7EBB9A',
+    illustrationEmoji: '🌸🧑‍🌾',
+    title: '昨日をふりかえりましょう',
+    description: '昨日の記録にまだモヤモヤが残っている時は、もう少し深掘りしてみましょう。',
+  },
+  {
+    id: 2,
+    bg: '#8AACBE',
+    illustrationEmoji: '📱✏️',
+    title: '今週をふりかえりましょう',
+    description: '今週は気分の浮き沈みが激しい週でした。深掘りして気分をフラットな状態を目指しましょう。',
+  },
+];
 
 // ── Date helper ────────────────────────────────────────
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
@@ -56,8 +76,9 @@ const MOOD_FACE_TYPE: Record<CompletedRecord['moodType'], FaceType> = {
 // ── Today's record card ────────────────────────────────
 function TodayRecordCard({ record, onToggleBookmark }: { record: CompletedRecord; onToggleBookmark: () => void }) {
   const faceType = MOOD_FACE_TYPE[record.moodType];
-  const bodyText = record.detail[0] ?? '';
+  const bodyText = record.detail.join('\n\n');
   const categoryChips = [...record.emotionChips, ...record.eventChips];
+  const hasMarkers = record.markerHighlights?.length > 0;
 
   return (
     <View style={styles.recordCard}>
@@ -74,9 +95,14 @@ function TodayRecordCard({ record, onToggleBookmark }: { record: CompletedRecord
         </TouchableOpacity>
       </View>
 
-      {/* AI body text (3 lines max) */}
+      {/* AI body text (3 lines max) — マーカー付き */}
       {!!bodyText && (
-        <Text style={styles.recordBody} numberOfLines={3}>{bodyText}</Text>
+        <MarkedText
+          style={styles.recordBody}
+          numberOfLines={3}
+          text={bodyText}
+          highlights={record.markerHighlights ?? []}
+        />
       )}
 
       {/* Category chips: emotions + event categories */}
@@ -105,22 +131,12 @@ function TodayRecordCard({ record, onToggleBookmark }: { record: CompletedRecord
   );
 }
 
-// ── Review card ────────────────────────────────────────
-function ReviewCard() {
-  return (
-    <View style={styles.reviewCard}>
-      <View style={styles.reviewIllustration}>
-        <Text style={styles.reviewIllustrationEmoji}>🌸</Text>
-        <Text style={styles.reviewIllustrationFigure}>🧑‍🌾</Text>
-      </View>
-    </View>
-  );
-}
 
 // ── Main Screen ────────────────────────────────────────
 export default function HomeScreen() {
   const [selectedMood, setSelectedMood] = useState<number | null>(null);
   const { records, toggleBookmark } = useCompletedRecordsStore();
+  const setMoodFaceType = useRecordStore(s => s.setMoodFaceType);
 
   const today = new Date();
   const todayRecord = records.find((r) => {
@@ -190,7 +206,10 @@ export default function HomeScreen() {
                 style={styles.recordBtnWrapper}
                 disabled={selectedMood === null}
                 activeOpacity={0.8}
-                onPress={() => router.push('/record/emotion')}
+                onPress={() => {
+                  if (selectedMood !== null) setMoodFaceType(MOODS[selectedMood].faceType);
+                  router.push('/record/emotion');
+                }}
               >
                 <LinearGradient
                   colors={selectedMood !== null ? ['#134E4A', '#14CBB4'] : ['#E5E7EB', '#E5E7EB']}
@@ -217,10 +236,27 @@ export default function HomeScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.reviewRow}
+          style={styles.reviewScrollView}
+          contentContainerStyle={styles.reviewScrollContent}
+          snapToInterval={REVIEW_CARD_WIDTH + 12}
+          snapToAlignment="start"
+          decelerationRate="fast"
         >
-          <ReviewCard />
-          <View style={[styles.reviewCard, { backgroundColor: '#B0C4C8' }]} />
+          {REVIEW_CARDS.map((item) => (
+            <TouchableOpacity
+              key={item.id}
+              style={[styles.reviewCard, { width: REVIEW_CARD_WIDTH, backgroundColor: item.bg }]}
+              activeOpacity={0.9}
+            >
+              <View style={[styles.reviewIllustration, { backgroundColor: item.bg }]}>
+                <Text style={styles.reviewIllustrationEmoji}>{item.illustrationEmoji}</Text>
+              </View>
+              <View style={styles.reviewCardBody}>
+                <Text style={styles.reviewCardTitle}>{item.title}</Text>
+                <Text style={styles.reviewCardDesc}>{item.description}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
         </ScrollView>
 
         <View style={{ height: 100 }} />
@@ -427,27 +463,44 @@ const styles = StyleSheet.create({
   },
 
   // Review section
-  reviewRow: {
-    gap: 12,
-    paddingRight: 20,
+  reviewScrollView: {
+    marginHorizontal: -20,
     marginBottom: 28,
   },
+  reviewScrollContent: {
+    paddingHorizontal: 20,
+    gap: 12,
+  },
   reviewCard: {
-    width: width * 0.72,
-    height: 200,
     borderRadius: 16,
-    backgroundColor: '#7EBB9A',
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  reviewIllustration: {
+    height: 200,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  reviewIllustration: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 0,
-  },
   reviewIllustrationEmoji: { fontSize: 72 },
-  reviewIllustrationFigure: { fontSize: 64, marginBottom: 4 },
+  reviewCardBody: {
+    backgroundColor: 'rgba(255,255,255,0.82)',
+    padding: 16,
+  },
+  reviewCardTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: TEXT_PRI,
+    marginBottom: 6,
+  },
+  reviewCardDesc: {
+    fontSize: 13,
+    color: TEXT_SEC,
+    lineHeight: 19,
+  },
 
   // FAB
   fab: {

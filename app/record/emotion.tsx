@@ -12,7 +12,7 @@ import { router } from 'expo-router';
 import { useRecordStore } from '../../store/recordStore';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import RecordHeader, { SCREEN_BG } from '../../components/RecordHeader';
+import RecordHeader, { SCREEN_BG, HEADER_INNER_HEIGHT } from '../../components/RecordHeader';
 import SelectChip from '../../components/SelectChip';
 
 // ── Colors ────────────────────────────────────────────
@@ -115,8 +115,12 @@ export default function EmotionScreen() {
               onSubmitEditing={addCustom}
               returnKeyType="done"
             />
-            <TouchableOpacity style={styles.addBtn} onPress={addCustom} activeOpacity={0.8}>
-              <Ionicons name="add" size={22} color={TEXT_SEC} />
+            <TouchableOpacity
+              style={[styles.addBtn, customInput.trim().length > 0 && styles.addBtnActive]}
+              onPress={addCustom}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="add" size={22} color={customInput.trim().length > 0 ? '#FFFFFF' : TEXT_SEC} />
             </TouchableOpacity>
           </View>
 
@@ -157,7 +161,7 @@ const styles = StyleSheet.create({
   // Scroll
   scroll: {
     paddingHorizontal: 20,
-    paddingTop: 12,
+    paddingTop: HEADER_INNER_HEIGHT + 12,
   },
 
   // Title
@@ -220,6 +224,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  addBtnActive: {
+    backgroundColor: '#0F766E',
   },
 
   // Footer

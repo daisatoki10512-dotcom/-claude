@@ -12,7 +12,7 @@ import { useState } from 'react';
 import { router } from 'expo-router';
 import { useRecordStore } from '../../store/recordStore';
 import { LinearGradient } from 'expo-linear-gradient';
-import RecordHeader, { SCREEN_BG } from '../../components/RecordHeader';
+import RecordHeader, { SCREEN_BG, HEADER_INNER_HEIGHT } from '../../components/RecordHeader';
 
 const TEXT_PRI  = '#1A1A1A';
 const TEXT_SEC  = '#6B7280';
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
 
   content: {
     paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingTop: HEADER_INNER_HEIGHT + 16,
   },
   title: {
     fontSize: 26,

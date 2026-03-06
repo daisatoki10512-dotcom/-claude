@@ -8,6 +8,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width - 48; // 24px padding both sides
@@ -225,7 +226,7 @@ export default function PostRecordScreen() {
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         >
-          <TouchableOpacity style={styles.fabInner} activeOpacity={0.85}>
+          <TouchableOpacity style={styles.fabInner} activeOpacity={0.85} onPress={() => router.push('/record/emotion')}>
             <Text style={styles.fabIcon}>✎</Text>
           </TouchableOpacity>
         </LinearGradient>
@@ -315,7 +316,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   cardBodyGray: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '400',
     color: TEXT_GRAY,
     lineHeight: 22.4,
@@ -388,7 +389,7 @@ const styles = StyleSheet.create({
 
   moreIcon: { fontSize: 16, color: TEXT_PRIMARY, letterSpacing: 2 },
   cardBottomRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  bookmarkIcon: { fontSize: 20 },
+  bookmarkIcon: { fontSize: 32 },
 
   // Review (ふりかえり)
   reviewScroll: { gap: 12, paddingBottom: 4 },

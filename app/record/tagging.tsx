@@ -13,7 +13,7 @@ import {
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import RecordHeader, { SCREEN_BG } from '../../components/RecordHeader';
+import RecordHeader, { SCREEN_BG, HEADER_INNER_HEIGHT } from '../../components/RecordHeader';
 import { useRecordStore } from '../../store/recordStore';
 import { useCompletedRecordsStore } from '../../store/completedRecordsStore';
 import SelectChip from '../../components/SelectChip';
@@ -30,7 +30,7 @@ const SUGGESTED_TAGS = ['理不尽', '人間関係', '仕事', '不安'];
 
 // ── Main Screen ───────────────────────────────────────
 export default function TaggingScreen() {
-  const { aiResult, eventText, emotions, setTags, reset } = useRecordStore();
+  const { aiResult, eventText, emotions, markerHighlights, setTags, reset } = useRecordStore();
   const { addRecord } = useCompletedRecordsStore();
 
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -62,6 +62,7 @@ export default function TaggingScreen() {
       emotionChips: aiResult?.emotionChips ?? emotions,
       eventChips: aiResult?.eventChips ?? [],
       tags: selectedTags,
+      markerHighlights,
     });
     reset();
     router.push('/record/complete');
@@ -70,11 +71,11 @@ export default function TaggingScreen() {
   return (
     <View style={styles.root}>
       <SafeAreaView style={styles.safe}>
+        <RecordHeader current={8} />
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
-          <RecordHeader current={8} />
 
           {/* ── コンテンツ ────────────────────────────── */}
           <ScrollView
@@ -115,7 +116,7 @@ export default function TaggingScreen() {
                 returnKeyType="done"
               />
               <TouchableOpacity
-                style={styles.addBtn}
+                style={[styles.addBtn, inputText.trim().length > 0 && styles.addBtnActive]}
                 onPress={addCustomTag}
                 hitSlop={8}
               >
@@ -173,7 +174,7 @@ const styles = StyleSheet.create({
   // Scroll
   scroll: {
     paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingTop: HEADER_INNER_HEIGHT + 8,
   },
 
   // Title
@@ -237,6 +238,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#B0B8C1',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  addBtnActive: {
+    backgroundColor: '#0F766E',
   },
 
   // Footer

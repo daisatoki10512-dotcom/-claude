@@ -14,42 +14,28 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Polyline } from 'react-native-svg';
 import { useRecordStore, AIAnalysisResult } from '../../store/recordStore';
 import InfoModal from '../../components/InfoModal';
-import RecordHeader, { SCREEN_BG } from '../../components/RecordHeader';
+import RecordHeader, { SCREEN_BG, HEADER_INNER_HEIGHT } from '../../components/RecordHeader';
+import FaceIcon, { FaceType } from '../../components/ui/FaceIcon';
+import { buildSegments } from '../../components/ui/MarkedText';
+import { MarkerHighlight } from '../../store/recordStore';
 
 // ── Colors ────────────────────────────────────────────
-const BG_TOP    = '#E5F5EF';
-const BG_BOT    = '#DDF0E8';
 const TEXT_PRI  = '#1A1A1A';
 const TEXT_SEC  = '#6B7280';
 const TEAL      = '#0F766E';
-const TEAL_DARK = '#134E4A';
 const WHITE     = '#FFFFFF';
+const MARKER_BG = '#B2F0E8';
 
-const TOTAL_STEPS = 8;
-const CURRENT     = 7;
-
-// ── Mood gradient by type ─────────────────────────────
-const MOOD_GRADIENT: Record<AIAnalysisResult['moodType'], [string, string]> = {
-  negative: ['#90B8F8', '#4A8EDF'],
-  neutral:  ['#B8D4F8', '#7098D8'],
-  positive: ['#90E8C8', '#2AA090'],
-};
-
+// ── Mood label color by type ──────────────────────────
 const MOOD_TEXT_COLOR: Record<AIAnalysisResult['moodType'], string> = {
   negative: '#3A6BC4',
   neutral:  '#4A6090',
   positive: '#0F766E',
 };
 
-// ── Mood face emoji by type ───────────────────────────
-const MOOD_FACE: Record<AIAnalysisResult['moodType'], string> = {
-  negative: '😟',
-  neutral:  '😐',
-  positive: '😊',
-};
+type Highlight = MarkerHighlight;
 
 // ── Sub-components ────────────────────────────────────
-
 function InsightIcon() {
   return (
     <View style={styles.insightIcon}>
@@ -69,8 +55,9 @@ function Chip({ label }: { label: string }) {
   );
 }
 
-// ── Error / Fallback ──────────────────────────────────
+// ── Fallback ──────────────────────────────────────────
 const FALLBACK: AIAnalysisResult = {
+  summaryTitle: '記録完了',
   moodLabel: '記録完了',
   moodType: 'neutral',
   detail: ['今日も記録してくれてありがとう。あなたの気持ちを大切にしてください。'],
@@ -83,10 +70,11 @@ const FALLBACK: AIAnalysisResult = {
 
 // ── Main Screen ───────────────────────────────────────
 export default function SummaryScreen() {
-  const { aiResult, analysisError } = useRecordStore();
+  const { aiResult, analysisError, moodFaceType, setMarkerHighlights } = useRecordStore();
   const [infoModalVisible, setInfoModalVisible] = useState(false);
+  const [highlights, setHighlights] = useState<Highlight[]>([]);
+  const [pendingSel, setPendingSel] = useState<Highlight | null>(null);
 
-  // AI結果がない場合（API呼び出し中 or エラー）
   if (!aiResult && !analysisError) {
     return (
       <View style={styles.root}>
@@ -99,9 +87,23 @@ export default function SummaryScreen() {
   }
 
   const result = aiResult ?? FALLBACK;
-  const gradientColors = MOOD_GRADIENT[result.moodType];
-  const moodTextColor  = MOOD_TEXT_COLOR[result.moodType];
-  const moodFace       = MOOD_FACE[result.moodType];
+  const moodTextColor = MOOD_TEXT_COLOR[result.moodType];
+  const detailText = result.detail.join('\n\n');
+  const segments = buildSegments(detailText, highlights);
+
+  const faceType: FaceType = moodFaceType ?? (
+    result.moodType === 'positive' ? 4 : result.moodType === 'negative' ? 2 : 3
+  );
+
+  const hasSelection = pendingSel !== null && pendingSel.end > pendingSel.start;
+
+  function applyMarker() {
+    if (!pendingSel) return;
+    const next = [...highlights, pendingSel!];
+    setHighlights(next);
+    setMarkerHighlights(next);
+    setPendingSel(null);
+  }
 
   return (
     <View style={styles.root}>
@@ -110,27 +112,22 @@ export default function SummaryScreen() {
           current={7}
           rightExtra={
             <TouchableOpacity hitSlop={12}>
-              <Ionicons name="bookmark-outline" size={22} color={TEXT_PRI} />
+              <Ionicons name="bookmark-outline" size={32} color={TEXT_PRI} />
             </TouchableOpacity>
           }
         />
 
-        {/* ── スクロール領域 ────────────────────────── */}
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
         >
-          {/* タイトル */}
           <Text style={styles.title}>今日の記録を{'\n'}言葉にしてみると</Text>
           <Text style={styles.subtitle}>
             気に入った言葉にマーカーを引くと、{'\n'}ブックマークに残せます。
-            <Text
-              style={styles.infoIcon}
-              onPress={() => setInfoModalVisible(true)}
-            > ⓘ</Text>
+            <Text style={styles.infoIcon} onPress={() => setInfoModalVisible(true)}> ⓘ</Text>
           </Text>
 
-          {/* エラー通知（API失敗時） */}
           {analysisError && (
             <View style={styles.errorBanner}>
               <Ionicons name="alert-circle-outline" size={16} color="#B45309" />
@@ -138,30 +135,62 @@ export default function SummaryScreen() {
             </View>
           )}
 
-          {/* ── 今日のふりかえり ─────────────────── */}
           <Text style={styles.sectionTitle}>今日のふりかえり</Text>
 
           <View style={styles.card}>
-            {/* 気分バッジ */}
+            {/* 気分: ホームで選択した FaceIcon */}
             <View style={styles.moodBadgeWrap}>
-              <LinearGradient
-                colors={gradientColors}
-                style={styles.moodCircle}
-                start={{ x: 0.2, y: 0.1 }}
-                end={{ x: 0.8, y: 0.9 }}
-              >
-                <Text style={styles.moodFace}>{moodFace}</Text>
-              </LinearGradient>
+              <FaceIcon type={faceType} active size={72} />
               <Text style={[styles.moodLabel, { color: moodTextColor }]}>{result.moodLabel}</Text>
             </View>
 
-            {/* 詳細テキスト */}
             <Text style={styles.detailLabel}>詳細</Text>
-            {result.detail.map((paragraph, i) => (
-              <Text key={i} style={[styles.cardBody, i < result.detail.length - 1 && { marginBottom: 12 }]}>
-                {paragraph}
-              </Text>
-            ))}
+
+            {/* 選択ポップアップ — 選択中のみ表示 */}
+            {hasSelection && (
+              <View style={styles.selectionPopup}>
+                <TouchableOpacity style={styles.popupItem} onPress={applyMarker} activeOpacity={0.8}>
+                  <Text style={styles.popupItemText}>マーカー</Text>
+                </TouchableOpacity>
+                <View style={styles.popupSep} />
+                <TouchableOpacity style={styles.popupItem} onPress={() => setPendingSel(null)} activeOpacity={0.8}>
+                  <Text style={styles.popupItemText}>コピー</Text>
+                </TouchableOpacity>
+                <View style={styles.popupSep} />
+                <TouchableOpacity style={styles.popupItem} onPress={() => setPendingSel(null)} activeOpacity={0.8}>
+                  <Ionicons name="chevron-forward" size={16} color={WHITE} />
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* ハイライト付きテキスト (selectable) */}
+            <Text
+              selectable
+              style={styles.cardBody}
+              onSelectionChange={(e) => {
+                const { start, end } = e.nativeEvent.selection;
+                if (end > start) setPendingSel({ start, end });
+                else setPendingSel(null);
+              }}
+            >
+              {segments.map((seg, i) =>
+                seg.highlighted
+                  ? <Text key={i} style={styles.markerSpan}>{seg.text}</Text>
+                  : <Text key={i}>{seg.text}</Text>
+              )}
+            </Text>
+
+            {/* マーカークリア */}
+            {highlights.length > 0 && (
+              <TouchableOpacity
+                style={styles.clearBtn}
+                onPress={() => { setHighlights([]); setMarkerHighlights([]); }}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="close-circle" size={14} color={TEAL} />
+                <Text style={styles.clearBtnText}>マーカーをクリア</Text>
+              </TouchableOpacity>
+            )}
 
             {/* 感情チップ */}
             {result.emotionChips.length > 0 && (
@@ -170,7 +199,6 @@ export default function SummaryScreen() {
               </View>
             )}
 
-            {/* 出来事 */}
             {result.eventChips.length > 0 && (
               <>
                 <Text style={styles.eventLabel}>出来事</Text>
@@ -181,7 +209,6 @@ export default function SummaryScreen() {
             )}
           </View>
 
-          {/* ── だいさんへメッセージ ──────────────── */}
           <Text style={styles.sectionTitle}>だいさんへメッセージ</Text>
 
           {result.insights.map((insight, i) => (
@@ -197,7 +224,6 @@ export default function SummaryScreen() {
           <View style={{ height: 120 }} />
         </ScrollView>
 
-        {/* ── 次へボタン（固定） ───────────────────── */}
         <View style={styles.footer}>
           <TouchableOpacity
             activeOpacity={0.85}
@@ -230,13 +256,11 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: SCREEN_BG },
   safe: { flex: 1 },
 
-  // Scroll
   scroll: {
     paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingTop: HEADER_INNER_HEIGHT + 8,
   },
 
-  // Title
   title: {
     fontSize: 26,
     fontWeight: '700',
@@ -254,7 +278,6 @@ const styles = StyleSheet.create({
   },
   infoIcon: { color: TEAL, fontSize: 14 },
 
-  // Error banner
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -266,7 +289,6 @@ const styles = StyleSheet.create({
   },
   errorText: { fontSize: 12, color: '#92400E', flex: 1 },
 
-  // Section
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
@@ -274,26 +296,16 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 
-  // Mood badge
   moodBadgeWrap: {
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
+    gap: 8,
   },
-  moodCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 6,
-  },
-  moodFace: { fontSize: 36 },
   moodLabel: {
     fontSize: 14,
     fontWeight: '600',
   },
 
-  // Card
   card: {
     backgroundColor: WHITE,
     borderRadius: 16,
@@ -311,11 +323,58 @@ const styles = StyleSheet.create({
     color: TEAL,
     marginBottom: 8,
   },
+
+  // Selection popup
+  selectionPopup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: '#1A1A1A',
+    borderRadius: 10,
+    marginBottom: 10,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  popupItem: {
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+  },
+  popupItemText: {
+    color: WHITE,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  popupSep: {
+    width: 1,
+    height: 20,
+    backgroundColor: 'rgba(255,255,255,0.25)',
+  },
+
   cardBody: {
     fontSize: 15,
     color: TEXT_PRI,
     lineHeight: 26,
   },
+  markerSpan: {
+    backgroundColor: MARKER_BG,
+  },
+
+  clearBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 10,
+    alignSelf: 'flex-end',
+  },
+  clearBtnText: {
+    fontSize: 12,
+    color: TEAL,
+  },
+
   eventLabel: {
     fontSize: 13,
     fontWeight: '600',
@@ -341,7 +400,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 
-  // Insight cards
   insightCard: {
     backgroundColor: WHITE,
     borderRadius: 16,
@@ -365,10 +423,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
     marginTop: 2,
   },
-  insightBody: {
-    flex: 1,
-    gap: 6,
-  },
+  insightBody: { flex: 1, gap: 6 },
   insightTitle: {
     fontSize: 15,
     fontWeight: '700',
@@ -381,7 +436,6 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 
-  // Footer
   footer: {
     position: 'absolute',
     bottom: 0,

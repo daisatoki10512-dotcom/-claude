@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import React from 'react';
 
 export const SCREEN_BG = 'rgba(240, 253, 250, 0.96)';
+export const HEADER_INNER_HEIGHT = 52; // paddingTop(12) + icon(32) + paddingBottom(8)
 const TEXT_PRI    = '#1A1A1A';
 const TEAL        = '#0F766E';
 const TOTAL_STEPS = 8;
@@ -29,7 +30,7 @@ export default function RecordHeader({
         hitSlop={12}
         style={styles.side}
       >
-        <Ionicons name="chevron-back" size={24} color={TEXT_PRI} />
+        <Ionicons name="chevron-back" size={32} color={TEXT_PRI} />
       </TouchableOpacity>
 
       {/* 中央: ステップドット */}
@@ -49,7 +50,7 @@ export default function RecordHeader({
           onPress={onClose ?? (() => router.dismissAll())}
           hitSlop={12}
         >
-          <Ionicons name="close" size={24} color={TEXT_PRI} />
+          <Ionicons name="close" size={32} color={TEXT_PRI} />
         </TouchableOpacity>
       </View>
     </View>
@@ -58,6 +59,11 @@ export default function RecordHeader({
 
 const styles = StyleSheet.create({
   header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: SCREEN_BG,
@@ -76,13 +82,13 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   dots: {
-    flex: 1,
+    width: 160,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 4,
   },
-  dot:         { height: 6, borderRadius: 3 },
-  dotActive:   { width: 24, backgroundColor: TEAL },
-  dotInactive: { width: 14, backgroundColor: '#C5DDD8' },
+  dot:         { width: 16.5, height: 6, borderRadius: 3 },
+  dotActive:   { backgroundColor: TEAL },
+  dotInactive: { backgroundColor: '#C5DDD8' },
 });

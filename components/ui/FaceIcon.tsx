@@ -167,12 +167,27 @@ function Face5({ size }: { size: number }) {
   );
 }
 
-const FACE_COMPONENTS = [Face1, Face2, Face3, Face4, Face5];
+const GLOW_COLORS: Record<FaceType, string> = {
+  1: '#8B65FD',
+  2: '#2F83EA',
+  3: '#43DEB2',
+  4: '#90D900',
+  5: '#EEC520',
+};
 
 export default function FaceIcon({ type, active = true, size = 44 }: FaceIconProps) {
   const FaceComponent = FACE_COMPONENTS[type - 1];
   return (
-    <View style={{ opacity: active ? 1 : 0.4 }}>
+    <View
+      style={{
+        opacity: active ? 1 : 0.4,
+        shadowColor: GLOW_COLORS[type],
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.7,
+        shadowRadius: 10,
+        elevation: 8,
+      }}
+    >
       <FaceComponent size={size} />
     </View>
   );
