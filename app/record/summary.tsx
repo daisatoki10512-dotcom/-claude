@@ -21,7 +21,7 @@ const BG_TOP    = '#E5F5EF';
 const BG_BOT    = '#DDF0E8';
 const TEXT_PRI  = '#1A1A1A';
 const TEXT_SEC  = '#6B7280';
-const TEAL      = '#14CBB4';
+const TEAL      = '#0F766E';
 const TEAL_DARK = '#134E4A';
 const WHITE     = '#FFFFFF';
 
@@ -38,7 +38,7 @@ const MOOD_GRADIENT: Record<AIAnalysisResult['moodType'], [string, string]> = {
 const MOOD_TEXT_COLOR: Record<AIAnalysisResult['moodType'], string> = {
   negative: '#3A6BC4',
   neutral:  '#4A6090',
-  positive: '#1A7063',
+  positive: '#0F766E',
 };
 
 // ── Mood face emoji by type ───────────────────────────
@@ -205,7 +205,7 @@ export default function SummaryScreen() {
             style={styles.nextBtnWrapper}
           >
             <LinearGradient
-              colors={[TEAL_DARK, TEAL]}
+              colors={['#134E4A', '#14CBB4']}
               style={styles.nextBtn}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}

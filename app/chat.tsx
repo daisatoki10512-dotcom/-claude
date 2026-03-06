@@ -17,7 +17,7 @@ import Anthropic from '@anthropic-ai/sdk';
 
 // ── Colors ────────────────────────────────────────────
 const BG         = '#E5F5EF';
-const TEAL       = '#2AA090';
+const TEAL       = '#0F766E';
 const TEAL_DARK  = '#1A7063';
 const TEXT_PRI   = '#1A1A1A';
 const TEXT_SEC   = '#6B7280';

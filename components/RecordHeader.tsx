@@ -5,7 +5,7 @@ import React from 'react';
 
 export const SCREEN_BG = 'rgba(240, 253, 250, 0.96)';
 const TEXT_PRI    = '#1A1A1A';
-const TEAL        = '#2AA090';
+const TEAL        = '#0F766E';
 const TOTAL_STEPS = 8;
 
 interface RecordHeaderProps {
