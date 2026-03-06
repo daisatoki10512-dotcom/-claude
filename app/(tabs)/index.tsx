@@ -9,20 +9,22 @@ import {
 } from 'react-native';
 import { useState } from 'react';
 import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import FaceIcon, { FaceType } from '../../components/ui/FaceIcon';
+import { useCompletedRecordsStore, CompletedRecord } from '../../store/completedRecordsStore';
 
 const { width } = Dimensions.get('window');
 
-// デザイン画像から抽出した色
-const BG = '#E5F5EF';
-const CARD_BG = '#FFFFFF';
-const TEXT_PRIMARY = '#1A1A1A';
-const TEXT_SECONDARY = '#6B7280';
-const TEAL = '#2AA090';
-const BTN_DISABLED_BG = '#E5E7EB';
-const BTN_DISABLED_TEXT = '#9CA3AF';
+const BG         = '#E5F5EF';
+const CARD_BG    = '#FFFFFF';
+const TEXT_PRI   = '#1A1A1A';
+const TEXT_SEC   = '#6B7280';
+const TEAL       = '#2AA090';
+const TEAL_DARK  = '#1A7063';
+const BTN_DIS_BG = '#E5E7EB';
+const BTN_DIS_TX = '#9CA3AF';
 
-// 感情スタンプ - 画像の5段階
 const MOODS: { faceType: FaceType; label: string }[] = [
   { faceType: 1, label: 'とても辛い' },
   { faceType: 2, label: '辛い' },
@@ -31,153 +33,302 @@ const MOODS: { faceType: FaceType; label: string }[] = [
   { faceType: 5, label: 'とても良い' },
 ];
 
-const MOOD_CIRCLE_SIZE = (width - 48 - 48) / 5; // 全幅 - 左右padding - 間隔
+// Card inner width = screen - scrollPadding(20*2) - cardPadding(16*2), split across 5 icons with 4 gaps of 8px
+const MOOD_CIRCLE_SIZE = Math.floor((width - 40 - 32 - 32) / 5);
 
-export default function HomeScreen() {
-  const [selectedMood, setSelectedMood] = useState<number | null>(null);
+// ── Date helper ────────────────────────────────────────
+const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
+function formatDateLabel(date: Date): string {
+  const m = date.getMonth() + 1;
+  const d = date.getDate();
+  const w = WEEKDAYS[date.getDay()];
+  return `今日、${m}/${d}（${w}）の記録`;
+}
+
+// ── Mood gradient colors ───────────────────────────────
+const MOOD_COLORS: Record<CompletedRecord['moodType'], [string, string]> = {
+  negative: ['#90B8F8', '#4A8EDF'],
+  neutral:  ['#B8D4F8', '#7098D8'],
+  positive: ['#90E8C8', '#2AA090'],
+};
+const MOOD_FACE: Record<CompletedRecord['moodType'], string> = {
+  negative: '😟',
+  neutral:  '😐',
+  positive: '😊',
+};
+
+// ── Today's record card ────────────────────────────────
+function TodayRecordCard({ record }: { record: CompletedRecord }) {
+  const gradientColors = MOOD_COLORS[record.moodType];
+  const moodFace = MOOD_FACE[record.moodType];
+  const previewText = record.detail[0] ?? '';
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.recordCard}>
+      {/* Top row: mood icon + title + bookmark */}
+      <View style={styles.recordTopRow}>
+        <LinearGradient
+          colors={gradientColors}
+          style={styles.moodCircle}
+          start={{ x: 0.2, y: 0.1 }}
+          end={{ x: 0.8, y: 0.9 }}
+        >
+          <Text style={styles.moodFace}>{moodFace}</Text>
+        </LinearGradient>
+
+        <Text style={styles.recordTitle} numberOfLines={3}>
+          {record.eventText || record.moodLabel}
+        </Text>
+
+        <TouchableOpacity hitSlop={12}>
+          <Ionicons name="bookmark-outline" size={20} color={TEXT_SEC} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Detail preview */}
+      <Text style={styles.recordBody} numberOfLines={3}>{previewText}</Text>
+
+      {/* Bookmark count badge */}
+      {record.bookmarkCount > 0 && (
+        <View style={styles.bookmarkBadge}>
+          <Ionicons name="bookmark" size={12} color={TEAL} />
+          <Text style={styles.bookmarkBadgeText}>{record.bookmarkCount}</Text>
+        </View>
+      )}
+
+      {/* Emotion chips */}
+      {record.emotionChips.length > 0 && (
+        <View style={styles.chipRow}>
+          {record.emotionChips.map((chip) => (
+            <View key={chip} style={styles.chip}>
+              <Text style={styles.chipText}>{chip}</Text>
+            </View>
+          ))}
+          {record.eventChips.map((chip) => (
+            <View key={chip} style={styles.chip}>
+              <Text style={styles.chipText}>{chip}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {/* Tags */}
+      {record.tags.length > 0 && (
+        <View style={styles.tagRow}>
+          {record.tags.map((tag) => (
+            <View key={tag} style={styles.tagItem}>
+              <Ionicons name="pricetag" size={12} color={TEAL} style={{ marginRight: 3 }} />
+              <Text style={styles.tagText}>{tag}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
+// ── Review card ────────────────────────────────────────
+function ReviewCard() {
+  return (
+    <View style={styles.reviewCard}>
+      <View style={styles.reviewIllustration}>
+        <Text style={styles.reviewIllustrationEmoji}>🌸</Text>
+        <Text style={styles.reviewIllustrationFigure}>🧑‍🌾</Text>
+      </View>
+    </View>
+  );
+}
+
+// ── Main Screen ────────────────────────────────────────
+export default function HomeScreen() {
+  const [selectedMood, setSelectedMood] = useState<number | null>(null);
+  const { records } = useCompletedRecordsStore();
+
+  const today = new Date();
+  const todayRecord = records.find((r) => {
+    return (
+      r.date.getFullYear() === today.getFullYear() &&
+      r.date.getMonth() === today.getMonth() &&
+      r.date.getDate() === today.getDate()
+    );
+  }) ?? null;
+
+  return (
+    <SafeAreaView style={styles.safe}>
       <ScrollView
-        style={styles.scrollView}
+        style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* 挨拶 */}
-        <View style={styles.greeting}>
-          <Text style={styles.greetingTitle}>こんにちは、 だいさん</Text>
-          <Text style={styles.greetingSubtitle}>
-            今日を穏やかに過ごすために{'\n'}残りの時間はゆっくり過ごしましょうね。
-          </Text>
-        </View>
-
-        {/* 今どんな気持ちですか？ */}
-        <Text style={styles.sectionTitle}>今どんな気持ちですか？</Text>
-
-        <View style={styles.moodCard}>
-          {/* スタンプ行 */}
-          <View style={styles.moodRow}>
-            {MOODS.map((mood, i) => (
-              <TouchableOpacity
-                key={i}
-                onPress={() => setSelectedMood(i)}
-                activeOpacity={0.8}
-                style={[
-                  styles.moodItem,
-                  selectedMood === i && styles.moodItemSelected,
-                ]}
-              >
-                <FaceIcon
-                  type={mood.faceType}
-                  active={selectedMood === null || selectedMood === i}
-                  size={MOOD_CIRCLE_SIZE}
-                />
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* 記録するボタン */}
-          <TouchableOpacity
-            style={[
-              styles.recordButton,
-              selectedMood !== null && styles.recordButtonActive,
-            ]}
-            disabled={selectedMood === null}
-            activeOpacity={0.8}
-            onPress={() => router.push('/record/emotion')}
-          >
-            <Text
-              style={[
-                styles.recordButtonText,
-                selectedMood !== null && styles.recordButtonTextActive,
-              ]}
-            >
-              記録する
+        {/* ── 挨拶 ─────────────────────────────────── */}
+        <View style={styles.greetingRow}>
+          <View style={styles.greeting}>
+            <Text style={styles.greetingTitle}>こんにちは、 だいさん</Text>
+            <Text style={styles.greetingSubtitle}>
+              今日を穏やかに過ごすために{'\n'}残りの時間はゆっくり過ごしましょうね。
             </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.chatBtn}
+            activeOpacity={0.8}
+            onPress={() => router.push('/chat')}
+          >
+            <Ionicons name="chatbubble-ellipses-outline" size={22} color={TEAL} />
           </TouchableOpacity>
         </View>
 
-        {/* ふりかえり */}
+        {/* ── 今日の記録 or 気持ち選択 ───────────────── */}
+        {todayRecord ? (
+          <>
+            <Text style={styles.sectionTitle}>{formatDateLabel(today)}</Text>
+            <TodayRecordCard record={todayRecord} />
+          </>
+        ) : (
+          <>
+            <Text style={styles.sectionTitle}>今どんな気持ちですか？</Text>
+            <View style={styles.moodCard}>
+              <View style={styles.moodRow}>
+                {MOODS.map((mood, i) => (
+                  <TouchableOpacity
+                    key={i}
+                    onPress={() => setSelectedMood(i)}
+                    activeOpacity={0.8}
+                    style={[
+                      styles.moodItem,
+                      selectedMood === i && styles.moodItemSelected,
+                    ]}
+                  >
+                    <FaceIcon
+                      type={mood.faceType}
+                      active={selectedMood === null || selectedMood === i}
+                      size={MOOD_CIRCLE_SIZE}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <TouchableOpacity
+                style={[
+                  styles.recordButton,
+                  selectedMood !== null && styles.recordButtonActive,
+                ]}
+                disabled={selectedMood === null}
+                activeOpacity={0.8}
+                onPress={() => router.push('/record/emotion')}
+              >
+                <Text
+                  style={[
+                    styles.recordButtonText,
+                    selectedMood !== null && styles.recordButtonTextActive,
+                  ]}
+                >
+                  記録する
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
+
+        {/* ── ふりかえり ────────────────────────────── */}
         <Text style={styles.sectionTitle}>ふりかえり</Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.reviewRow}
+        >
+          <ReviewCard />
+          <View style={[styles.reviewCard, { backgroundColor: '#B0C4C8' }]} />
+        </ScrollView>
 
-        <View style={styles.reviewCard}>
-          {/* イラスト部分（花に水やりのシルエット） */}
-          <View style={styles.illustrationArea}>
-            <Text style={styles.illustrationEmoji}>🌱</Text>
-            <Text style={styles.illustrationEmoji2}>💧</Text>
-          </View>
-
-          <View style={styles.reviewCardContent}>
-            <Text style={styles.reviewTitle}>自己理解を深めましょう！</Text>
-            <Text style={styles.reviewDescription}>
-              記録を続けていくと同時に、あなたの自己理解につながるコンテンツ...
-            </Text>
-          </View>
-        </View>
-
-        <View style={{ height: 16 }} />
+        <View style={{ height: 100 }} />
       </ScrollView>
+
+      {/* ── FAB (記録ボタン) ─────────────────────────── */}
+      <TouchableOpacity
+        style={styles.fab}
+        activeOpacity={0.85}
+        onPress={() => router.push('/record/emotion')}
+      >
+        <LinearGradient
+          colors={[TEAL_DARK, TEAL]}
+          style={styles.fabGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <Ionicons name="pencil" size={24} color="#FFFFFF" />
+        </LinearGradient>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
 
+// ── Styles ─────────────────────────────────────────────
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: BG,
-  },
-  scrollView: {
-    flex: 1,
-    backgroundColor: BG,
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
-  },
+  safe: { flex: 1, backgroundColor: BG },
+  scroll: { flex: 1, backgroundColor: BG },
+  scrollContent: { paddingHorizontal: 20, paddingTop: 8 },
 
-  // 挨拶
-  greeting: {
+  // Greeting
+  greetingRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     marginTop: 16,
     marginBottom: 28,
+  },
+  greeting: { flex: 1 },
+  chatBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#E5F5EF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: '#C5DDD8',
   },
   greetingTitle: {
     fontSize: 28,
     fontWeight: '700',
-    color: TEXT_PRIMARY,
+    color: TEXT_PRI,
     letterSpacing: -0.5,
     marginBottom: 8,
   },
   greetingSubtitle: {
     fontSize: 14,
-    color: TEXT_SECONDARY,
+    color: TEXT_SEC,
     lineHeight: 21,
-    fontWeight: '400',
   },
 
-  // セクションタイトル
+  // Section title
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: TEXT_PRIMARY,
+    color: TEXT_PRI,
     marginBottom: 12,
   },
 
-  // 気持ちカード
+  // Mood card — matches Figma spec:
+  // width:354, height:206, padding:16, border-radius:20, box-shadow:0 2px 16px 0 rgba(0,0,0,0.04)
   moodCard: {
     backgroundColor: CARD_BG,
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 20,
+    padding: 16,
+    height: 206,
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
     marginBottom: 28,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
+    shadowOpacity: 0.04,
+    shadowRadius: 16,
     elevation: 2,
   },
   moodRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    alignItems: 'center',
+    width: '100%',
   },
   moodItem: {
     borderRadius: MOOD_CIRCLE_SIZE / 2,
@@ -192,64 +343,149 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
-
-  // 記録するボタン
   recordButton: {
-    backgroundColor: BTN_DISABLED_BG,
+    backgroundColor: BTN_DIS_BG,
     borderRadius: 50,
     paddingVertical: 16,
     alignItems: 'center',
+    width: '100%',
   },
-  recordButtonActive: {
-    backgroundColor: TEAL,
-  },
+  recordButtonActive: { backgroundColor: TEAL },
   recordButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: BTN_DISABLED_TEXT,
+    color: BTN_DIS_TX,
   },
-  recordButtonTextActive: {
-    color: '#FFFFFF',
-  },
+  recordButtonTextActive: { color: '#FFFFFF' },
 
-  // ふりかえりカード
-  reviewCard: {
+  // Today's record card
+  recordCard: {
     backgroundColor: CARD_BG,
     borderRadius: 16,
-    overflow: 'hidden',
+    padding: 16,
+    marginBottom: 28,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 2,
   },
-  illustrationArea: {
-    height: 200,
-    backgroundColor: '#F8FAF9',
+  recordTopRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginBottom: 10,
+  },
+  moodCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 8,
+    flexShrink: 0,
   },
-  illustrationEmoji: {
-    fontSize: 80,
-  },
-  illustrationEmoji2: {
-    fontSize: 40,
-    marginBottom: 30,
-  },
-  reviewCardContent: {
-    padding: 20,
-  },
-  reviewTitle: {
-    fontSize: 20,
+  moodFace: { fontSize: 24 },
+  recordTitle: {
+    flex: 1,
+    fontSize: 16,
     fontWeight: '700',
-    color: TEXT_PRIMARY,
-    marginBottom: 8,
+    color: TEXT_PRI,
+    lineHeight: 24,
   },
-  reviewDescription: {
+  recordBody: {
     fontSize: 14,
-    color: TEXT_SECONDARY,
-    lineHeight: 21,
+    color: TEXT_PRI,
+    lineHeight: 22,
+    marginBottom: 10,
+  },
+  bookmarkBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#E5F5EF',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    alignSelf: 'flex-start',
+    marginBottom: 10,
+  },
+  bookmarkBadgeText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: TEAL,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 10,
+  },
+  chip: {
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 50,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+  },
+  chipText: {
+    fontSize: 13,
+    color: TEXT_PRI,
+  },
+  tagRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  tagItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  tagText: {
+    fontSize: 13,
+    color: TEAL,
+    fontWeight: '500',
+  },
+
+  // Review section
+  reviewRow: {
+    gap: 12,
+    paddingRight: 20,
+    marginBottom: 28,
+  },
+  reviewCard: {
+    width: width * 0.72,
+    height: 200,
+    borderRadius: 16,
+    backgroundColor: '#7EBB9A',
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reviewIllustration: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 0,
+  },
+  reviewIllustrationEmoji: { fontSize: 72 },
+  reviewIllustrationFigure: { fontSize: 64, marginBottom: 4 },
+
+  // FAB
+  fab: {
+    position: 'absolute',
+    right: 20,
+    bottom: 96,
+    borderRadius: 32,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  fabGradient: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

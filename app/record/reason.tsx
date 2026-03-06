@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useState } from 'react';
 import { router } from 'expo-router';
+import { useRecordStore } from '../../store/recordStore';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -172,6 +173,7 @@ export default function ReasonScreen() {
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [customInput, setCustomInput] = useState('');
+  const setReasons = useRecordStore(s => s.setReasons);
 
   const toggleCategory = (id: string) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -249,7 +251,7 @@ export default function ReasonScreen() {
           <TouchableOpacity
             disabled={!canNext}
             activeOpacity={0.85}
-            onPress={() => router.push('/record/event')}
+            onPress={() => { setReasons(Array.from(selected)); router.push('/record/event'); }}
             style={styles.nextBtnWrapper}
           >
             <LinearGradient

@@ -71,6 +71,30 @@ export default function RootLayout() {
             animation: 'fade',
           }}
         />
+        <Stack.Screen
+          name="record/tagging"
+          options={{
+            headerShown: false,
+            presentation: 'modal',
+            animation: 'slide_from_right',
+          }}
+        />
+        <Stack.Screen
+          name="record/complete"
+          options={{
+            headerShown: false,
+            presentation: 'modal',
+            animation: 'fade',
+          }}
+        />
+        <Stack.Screen
+          name="chat"
+          options={{
+            headerShown: false,
+            presentation: 'modal',
+            animation: 'slide_from_bottom',
+          }}
+        />
       </Stack>
     </>
   );

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   View,
   Text,
@@ -5,11 +6,14 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
+  ActivityIndicator,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Path, Circle, Polyline } from 'react-native-svg';
+import Svg, { Polyline } from 'react-native-svg';
+import { useRecordStore, AIAnalysisResult } from '../../store/recordStore';
+import InfoModal from '../../components/InfoModal';
 
 // ── Colors ────────────────────────────────────────────
 const BG_TOP    = '#E5F5EF';
@@ -22,6 +26,26 @@ const WHITE     = '#FFFFFF';
 
 const TOTAL_STEPS = 8;
 const CURRENT     = 7;
+
+// ── Mood gradient by type ─────────────────────────────
+const MOOD_GRADIENT: Record<AIAnalysisResult['moodType'], [string, string]> = {
+  negative: ['#90B8F8', '#4A8EDF'],
+  neutral:  ['#B8D4F8', '#7098D8'],
+  positive: ['#90E8C8', '#2AA090'],
+};
+
+const MOOD_TEXT_COLOR: Record<AIAnalysisResult['moodType'], string> = {
+  negative: '#3A6BC4',
+  neutral:  '#4A6090',
+  positive: '#1A7063',
+};
+
+// ── Mood face emoji by type ───────────────────────────
+const MOOD_FACE: Record<AIAnalysisResult['moodType'], string> = {
+  negative: '😟',
+  neutral:  '😐',
+  positive: '😊',
+};
 
 // ── Sub-components ────────────────────────────────────
 
@@ -38,32 +62,6 @@ function StepDots() {
   );
 }
 
-/** 気分アイコン（青いグラデーション円 + 悲しい顔） */
-function MoodBadge() {
-  return (
-    <View style={styles.moodBadgeWrap}>
-      <LinearGradient
-        colors={['#90B8F8', '#4A8EDF']}
-        style={styles.moodCircle}
-        start={{ x: 0.2, y: 0.1 }}
-        end={{ x: 0.8, y: 0.9 }}
-      >
-        {/* 悲しい顔 */}
-        <Svg width={36} height={36} viewBox="0 0 36 36" fill="none">
-          <Circle cx="12" cy="14" r="2.5" fill="#2A5DB0" />
-          <Circle cx="24" cy="14" r="2.5" fill="#2A5DB0" />
-          <Path
-            d="M12 24C14 21 22 21 24 24"
-            stroke="#2A5DB0" strokeWidth="2.5" strokeLinecap="round" fill="none"
-          />
-        </Svg>
-      </LinearGradient>
-      <Text style={styles.moodLabel}>悪い気分</Text>
-    </View>
-  );
-}
-
-/** インサイトカードのアイコン */
 function InsightIcon() {
   return (
     <View style={styles.insightIcon}>
@@ -75,7 +73,6 @@ function InsightIcon() {
   );
 }
 
-/** 感情/出来事チップ */
 function Chip({ label }: { label: string }) {
   return (
     <View style={styles.chip}>
@@ -84,8 +81,40 @@ function Chip({ label }: { label: string }) {
   );
 }
 
+// ── Error / Fallback ──────────────────────────────────
+const FALLBACK: AIAnalysisResult = {
+  moodLabel: '記録完了',
+  moodType: 'neutral',
+  detail: ['今日も記録してくれてありがとう。あなたの気持ちを大切にしてください。'],
+  emotionChips: [],
+  eventChips: [],
+  insights: [
+    { title: '記録を続けることが大切', body: '毎日の気持ちを記録することで、自分のパターンを知ることができます。' },
+  ],
+};
+
 // ── Main Screen ───────────────────────────────────────
 export default function SummaryScreen() {
+  const { aiResult, analysisError } = useRecordStore();
+  const [infoModalVisible, setInfoModalVisible] = useState(false);
+
+  // AI結果がない場合（API呼び出し中 or エラー）
+  if (!aiResult && !analysisError) {
+    return (
+      <LinearGradient colors={[BG_TOP, BG_BOT]} style={styles.gradient}>
+        <SafeAreaView style={[styles.safe, { alignItems: 'center', justifyContent: 'center' }]}>
+          <ActivityIndicator size="large" color={TEAL} />
+          <Text style={{ color: TEXT_SEC, marginTop: 12 }}>分析中...</Text>
+        </SafeAreaView>
+      </LinearGradient>
+    );
+  }
+
+  const result = aiResult ?? FALLBACK;
+  const gradientColors = MOOD_GRADIENT[result.moodType];
+  const moodTextColor  = MOOD_TEXT_COLOR[result.moodType];
+  const moodFace       = MOOD_FACE[result.moodType];
+
   return (
     <LinearGradient colors={[BG_TOP, BG_BOT]} style={styles.gradient}>
       <SafeAreaView style={styles.safe}>
@@ -115,78 +144,75 @@ export default function SummaryScreen() {
           <Text style={styles.title}>今日の記録を{'\n'}言葉にしてみると</Text>
           <Text style={styles.subtitle}>
             気に入った言葉にマーカーを引くと、{'\n'}ブックマークに残せます。
-            <Text style={styles.infoIcon}> ⓘ</Text>
+            <Text
+              style={styles.infoIcon}
+              onPress={() => setInfoModalVisible(true)}
+            > ⓘ</Text>
           </Text>
+
+          {/* エラー通知（API失敗時） */}
+          {analysisError && (
+            <View style={styles.errorBanner}>
+              <Ionicons name="alert-circle-outline" size={16} color="#B45309" />
+              <Text style={styles.errorText}>AI分析に失敗しました。デフォルト表示でご確認ください。</Text>
+            </View>
+          )}
 
           {/* ── 今日のふりかえり ─────────────────── */}
           <Text style={styles.sectionTitle}>今日のふりかえり</Text>
 
           <View style={styles.card}>
-            <MoodBadge />
+            {/* 気分バッジ */}
+            <View style={styles.moodBadgeWrap}>
+              <LinearGradient
+                colors={gradientColors}
+                style={styles.moodCircle}
+                start={{ x: 0.2, y: 0.1 }}
+                end={{ x: 0.8, y: 0.9 }}
+              >
+                <Text style={styles.moodFace}>{moodFace}</Text>
+              </LinearGradient>
+              <Text style={[styles.moodLabel, { color: moodTextColor }]}>{result.moodLabel}</Text>
+            </View>
 
+            {/* 詳細テキスト */}
             <Text style={styles.detailLabel}>詳細</Text>
-            <Text style={styles.cardBody}>
-              上司の方に相談を申し込んだのに、なかなか時間が決まらないと「嫌われているのかな」
-              と不安になってしまいますよね。勇気を出したのに、その反応はがっかりしてしまうのも当然です。
-            </Text>
-            <Text style={styles.cardBody}>
-              でも、そう感じるのは、あなたが今の状況を良くしたいと真剣に思っている証拠ですよ。
-              もしかしたら上司の方は、単に多忙で余裕がないだけかもしれません。
-            </Text>
-            <Text style={styles.cardBodyFade}>
-              「もう一度伝えたい」と思えるその強さを、ぜひ大切にしてください。
-            </Text>
+            {result.detail.map((paragraph, i) => (
+              <Text key={i} style={[styles.cardBody, i < result.detail.length - 1 && { marginBottom: 12 }]}>
+                {paragraph}
+              </Text>
+            ))}
 
             {/* 感情チップ */}
-            <View style={styles.chipRow}>
-              <Chip label="不安" />
-              <Chip label="がっかり" />
-              <Chip label="疲労" />
-            </View>
+            {result.emotionChips.length > 0 && (
+              <View style={styles.chipRow}>
+                {result.emotionChips.map(e => <Chip key={e} label={e} />)}
+              </View>
+            )}
 
             {/* 出来事 */}
-            <Text style={styles.eventLabel}>出来事</Text>
-            <View style={styles.chipRow}>
-              <Chip label="職場関係" />
-            </View>
+            {result.eventChips.length > 0 && (
+              <>
+                <Text style={styles.eventLabel}>出来事</Text>
+                <View style={styles.chipRow}>
+                  {result.eventChips.map(e => <Chip key={e} label={e} />)}
+                </View>
+              </>
+            )}
           </View>
 
           {/* ── だいさんへメッセージ ──────────────── */}
           <Text style={styles.sectionTitle}>だいさんへメッセージ</Text>
 
-          <View style={styles.insightCard}>
-            <InsightIcon />
-            <View style={styles.insightBody}>
-              <Text style={styles.insightTitle}>不安の裏にある「前向きな力」</Text>
-              <Text style={styles.insightText}>
-                不安や後悔を感じながらも、心の奥には「あきらめずに解決したい」という強いエネルギーがあります。
-                その前向きな気持ちがあれば、きっと次はベストなタイミングが見つかるはずですよ。
-              </Text>
+          {result.insights.map((insight, i) => (
+            <View key={i} style={styles.insightCard}>
+              <InsightIcon />
+              <View style={styles.insightBody}>
+                <Text style={styles.insightTitle}>{insight.title}</Text>
+                <Text style={styles.insightText}>{insight.body}</Text>
+              </View>
             </View>
-          </View>
-
-          <View style={styles.insightCard}>
-            <InsightIcon />
-            <View style={styles.insightBody}>
-              <Text style={styles.insightTitle}>「待ち時間」に不安が膨らむ傾向</Text>
-              <Text style={styles.insightText}>
-                過去の記録を見ると、相手からの反応を待っている時に「自分のせいかも」と不安が強まる傾向があるようです。
-                そんな時は「今は相手が考える時間」と割り切って、自分にご褒美をあげるのがあなたの「お守り」でしたね。
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.insightCard}>
-            <InsightIcon />
-            <View style={styles.insightBody}>
-              <Text style={styles.insightTitle}>「リマインド」が解決の鍵かも？</Text>
-              <Text style={styles.insightText}>
-                以前、同じように予定が合わずモヤモヤした時、一言「お忙しいところすみません」と再送したことで、
-                「忘れてた、ありがとう！」とスムーズに解決したことがありましたよ。あの時と同じように、
-                あなたの「もう一度伝えたい」という素直な気持ちに従ってみることが、今の霧を晴らすヒントになりそうです。
-              </Text>
-            </View>
-          </View>
+          ))}
 
           <View style={{ height: 120 }} />
         </ScrollView>
@@ -195,7 +221,7 @@ export default function SummaryScreen() {
         <View style={styles.footer}>
           <TouchableOpacity
             activeOpacity={0.85}
-            onPress={() => { /* TODO: 次のステップへ */ }}
+            onPress={() => router.push('/record/tagging')}
             style={styles.nextBtnWrapper}
           >
             <LinearGradient
@@ -210,6 +236,11 @@ export default function SummaryScreen() {
         </View>
 
       </SafeAreaView>
+
+      <InfoModal
+        visible={infoModalVisible}
+        onClose={() => setInfoModalVisible(false)}
+      />
     </LinearGradient>
   );
 }
@@ -266,10 +297,19 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginBottom: 24,
   },
-  infoIcon: {
-    color: TEAL,
-    fontSize: 14,
+  infoIcon: { color: TEAL, fontSize: 14 },
+
+  // Error banner
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#FEF3C7',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
   },
+  errorText: { fontSize: 12, color: '#92400E', flex: 1 },
 
   // Section
   sectionTitle: {
@@ -292,10 +332,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 6,
   },
+  moodFace: { fontSize: 36 },
   moodLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#3A6BC4',
   },
 
   // Card
@@ -320,26 +360,19 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: TEXT_PRI,
     lineHeight: 26,
-    marginBottom: 12,
-  },
-  cardBodyFade: {
-    fontSize: 15,
-    color: TEXT_SEC,
-    lineHeight: 26,
-    marginBottom: 16,
   },
   eventLabel: {
     fontSize: 13,
     fontWeight: '600',
     color: TEXT_SEC,
-    marginTop: 8,
+    marginTop: 12,
     marginBottom: 8,
   },
   chipRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    marginBottom: 4,
+    marginTop: 12,
   },
   chip: {
     backgroundColor: '#E5F5EF',
