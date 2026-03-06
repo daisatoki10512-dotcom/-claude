@@ -23,6 +23,7 @@ type RecordState = {
   eventText: string;
   thoughtText: string;
   desireText: string;
+  tags: string[];
 
   // AI analysis result
   aiResult: AIAnalysisResult | null;
@@ -34,6 +35,7 @@ type RecordState = {
   setEvent: (text: string) => void;
   setThought: (text: string) => void;
   setDesire: (text: string) => void;
+  setTags: (tags: string[]) => void;
   setAIResult: (result: AIAnalysisResult) => void;
   setAnalysisError: (error: string | null) => void;
   reset: () => void;
@@ -45,6 +47,7 @@ const initialState = {
   eventText: '',
   thoughtText: '',
   desireText: '',
+  tags: [],
   aiResult: null,
   analysisError: null,
 };
@@ -57,6 +60,7 @@ export const useRecordStore = create<RecordState>((set) => ({
   setEvent: (text) => set({ eventText: text }),
   setThought: (text) => set({ thoughtText: text }),
   setDesire: (text) => set({ desireText: text }),
+  setTags: (tags) => set({ tags }),
   setAIResult: (result) => set({ aiResult: result, analysisError: null }),
   setAnalysisError: (error) => set({ analysisError: error }),
   reset: () => set(initialState),

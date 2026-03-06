@@ -221,7 +221,7 @@ export default function SummaryScreen() {
         <View style={styles.footer}>
           <TouchableOpacity
             activeOpacity={0.85}
-            onPress={() => router.dismissAll()}
+            onPress={() => router.push('/record/tagging')}
             style={styles.nextBtnWrapper}
           >
             <LinearGradient
