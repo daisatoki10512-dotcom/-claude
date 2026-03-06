@@ -115,7 +115,7 @@ export default function TaggingScreen() {
                 returnKeyType="done"
               />
               <TouchableOpacity
-                style={styles.addBtn}
+                style={[styles.addBtn, inputText.trim().length > 0 && styles.addBtnActive]}
                 onPress={addCustomTag}
                 hitSlop={8}
               >
@@ -237,6 +237,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#B0B8C1',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  addBtnActive: {
+    backgroundColor: '#0F766E',
   },
 
   // Footer
