@@ -7,8 +7,9 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
+import FaceIcon, { FaceType } from '../../components/ui/FaceIcon';
+import { useCompletedRecordsStore, CompletedRecord } from '../../store/completedRecordsStore';
 
 const BG = '#E5F5EF';
 const CARD_BG = '#FFFFFF';
@@ -18,63 +19,39 @@ const TEAL = '#0F766E';
 const TAG_BG = '#F3F4F6';
 const TAG_TEXT = '#374151';
 
-type MoodCircleProps = {
-  gradientColors: [string, string];
-  emoji: string;
+const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
+
+const MOOD_FACE_TYPE: Record<CompletedRecord['moodType'], FaceType> = {
+  negative: 2,
+  neutral:  3,
+  positive: 4,
 };
 
-function MoodCircle({ gradientColors, emoji }: MoodCircleProps) {
-  return (
-    <LinearGradient
-      colors={gradientColors}
-      style={styles.moodCircle}
-      start={{ x: 0.3, y: 0 }}
-      end={{ x: 0.7, y: 1 }}
-    >
-      <Text style={styles.moodEmoji}>{emoji}</Text>
-    </LinearGradient>
-  );
+function formatDateHeader(date: Date): string {
+  const m = date.getMonth() + 1;
+  const d = date.getDate();
+  const w = WEEKDAYS[date.getDay()];
+  return `${m}/${d}（${w}）`;
 }
 
-const recordsData = [
-  {
-    date: '11/9（土）',
-    entries: [
-      {
-        id: 1,
-        mood: { emoji: '😔', colors: ['#7EB8F0', '#4A90D9'] as [string, string] },
-        bookmarked: false,
-        title: '相談したいのに、予定を合わせてもらえなかった',
-        description:
-          '上司の方に相談を申し込んだのに、なかなか時間が決まらないと「嫌われているのかな」と不安になってしまいますよね。勇気を出したの...',
-        aiCount: 1,
-        tags: ['不安', 'がっかり', '後悔', '職場関係'],
-        markers: ['理不尽', '佐藤先輩'],
-      },
-    ],
-  },
-  {
-    date: '11/8（金）',
-    entries: [
-      {
-        id: 2,
-        mood: { emoji: '😐', colors: ['#5DD8C0', '#1BAE94'] as [string, string] },
-        bookmarked: false,
-        title: '職場での頼まれごとに戸惑いを覚えた',
-        description:
-          '相手の意図が読み取れず、戸惑いが残ったようですね。本当はもっと明確な役割や期待を知りたかったから、不安が膨らんだのだと思いま...',
-        aiCount: 0,
-        tags: ['不満', '職場関係'],
-        markers: ['理不尽', '佐藤先輩'],
-      },
-    ],
-  },
-];
+function groupByDate(records: CompletedRecord[]) {
+  const map = new Map<string, { label: string; records: CompletedRecord[] }>();
+  for (const r of records) {
+    const key = `${r.date.getFullYear()}-${r.date.getMonth()}-${r.date.getDate()}`;
+    if (!map.has(key)) {
+      map.set(key, { label: formatDateHeader(r.date), records: [] });
+    }
+    map.get(key)!.records.push(r);
+  }
+  return Array.from(map.values());
+}
 
 const TABS = ['リスト', 'カレンダー'];
 
 export default function RecordsScreen() {
   const [activeTab, setActiveTab] = useState(0);
+  const { records, toggleBookmark } = useCompletedRecordsStore();
+  const grouped = groupByDate(records);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -110,70 +87,76 @@ export default function RecordsScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {recordsData.map((group) => (
-          <View key={group.date}>
-            <Text style={styles.dateHeader}>{group.date}</Text>
-            {group.entries.map((entry) => (
-              <TouchableOpacity
-                key={entry.id}
-                style={styles.entryCard}
-                activeOpacity={0.9}
-              >
-                {/* ヘッダー行 */}
-                <View style={styles.entryHeader}>
-                  <MoodCircle
-                    gradientColors={entry.mood.colors}
-                    emoji={entry.mood.emoji}
-                  />
-                  <Text style={styles.entryTitle} numberOfLines={2}>
-                    {entry.title}
-                  </Text>
-                  <Ionicons
-                    name={entry.bookmarked ? 'bookmark' : 'bookmark-outline'}
-                    size={22}
-                    color={entry.bookmarked ? TEAL : '#C0C8D0'}
-                  />
-                </View>
-
-                {/* 本文 */}
-                <Text style={styles.entryDescription} numberOfLines={3}>
-                  {entry.description}
-                </Text>
-
-                {/* AI返信数 */}
-                {entry.aiCount > 0 && (
-                  <View style={styles.aiCountBadge}>
-                    <View style={styles.aiCountIcon}>
-                      <Ionicons name="person" size={12} color={TEAL} />
-                    </View>
-                    <Text style={styles.aiCountText}>{entry.aiCount}</Text>
-                  </View>
-                )}
-
-                {/* 感情タグ */}
-                <View style={styles.tagsRow}>
-                  {entry.tags.map((tag) => (
-                    <View key={tag} style={styles.tag}>
-                      <Text style={styles.tagText}>{tag}</Text>
-                    </View>
-                  ))}
-                </View>
-
-                {/* マーカー */}
-                {entry.markers.length > 0 && (
-                  <View style={styles.markersRow}>
-                    {entry.markers.map((marker) => (
-                      <View key={marker} style={styles.markerItem}>
-                        <Ionicons name="pricetag" size={11} color={TEAL} />
-                        <Text style={styles.markerText}>{marker}</Text>
-                      </View>
-                    ))}
-                  </View>
-                )}
-              </TouchableOpacity>
-            ))}
+        {grouped.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Ionicons name="document-text-outline" size={48} color="#C0C8D0" />
+            <Text style={styles.emptyText}>まだ記録がありません</Text>
+            <Text style={styles.emptySubText}>ホームから気持ちを記録してみましょう</Text>
           </View>
-        ))}
+        ) : (
+          grouped.map((group) => (
+            <View key={group.label}>
+              <Text style={styles.dateHeader}>{group.label}</Text>
+              {group.records.map((record) => {
+                const faceType = MOOD_FACE_TYPE[record.moodType];
+                const bodyText = record.detail[0] ?? '';
+                const categoryChips = [...record.emotionChips, ...record.eventChips];
+
+                return (
+                  <View key={record.id} style={styles.entryCard}>
+                    {/* ヘッダー行: 顔アイコン + AIサマリータイトル + ブックマーク */}
+                    <View style={styles.entryHeader}>
+                      <FaceIcon type={faceType} active size={48} />
+                      <Text style={styles.entryTitle} numberOfLines={2}>
+                        {record.summaryTitle}
+                      </Text>
+                      <TouchableOpacity
+                        hitSlop={12}
+                        onPress={() => toggleBookmark(record.id)}
+                      >
+                        <Ionicons
+                          name={record.bookmarked ? 'bookmark' : 'bookmark-outline'}
+                          size={22}
+                          color={record.bookmarked ? TEAL : '#C0C8D0'}
+                        />
+                      </TouchableOpacity>
+                    </View>
+
+                    {/* 本文: AIの振り返り文（3行まで） */}
+                    {!!bodyText && (
+                      <Text style={styles.entryDescription} numberOfLines={3}>
+                        {bodyText}
+                      </Text>
+                    )}
+
+                    {/* カテゴリ: 感情 + 出来事カテゴリ */}
+                    {categoryChips.length > 0 && (
+                      <View style={styles.tagsRow}>
+                        {categoryChips.map((chip) => (
+                          <View key={chip} style={styles.tag}>
+                            <Text style={styles.tagText}>{chip}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+
+                    {/* タグ */}
+                    {record.tags.length > 0 && (
+                      <View style={styles.markersRow}>
+                        {record.tags.map((tag) => (
+                          <View key={tag} style={styles.markerItem}>
+                            <Ionicons name="pricetag" size={11} color={TEAL} />
+                            <Text style={styles.markerText}>{tag}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
+            </View>
+          ))
+        )}
         <View style={{ height: 16 }} />
       </ScrollView>
     </SafeAreaView>
@@ -220,6 +203,24 @@ const styles = StyleSheet.create({
 
   scrollView: { flex: 1, backgroundColor: BG },
   scrollContent: { paddingHorizontal: 20 },
+
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 80,
+    gap: 12,
+  },
+  emptyText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: TEXT_SECONDARY,
+  },
+  emptySubText: {
+    fontSize: 13,
+    color: '#B0B8C0',
+    textAlign: 'center',
+  },
+
   dateHeader: {
     fontSize: 16,
     fontWeight: '700',
@@ -244,15 +245,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: 10,
   },
-  moodCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  moodEmoji: { fontSize: 26 },
   entryTitle: {
     flex: 1,
     fontSize: 16,
@@ -265,25 +257,6 @@ const styles = StyleSheet.create({
     color: TEXT_SECONDARY,
     lineHeight: 20,
   },
-  aiCountBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#E0F5F0',
-    alignSelf: 'flex-start',
-    borderRadius: 50,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  aiCountIcon: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: TEAL,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  aiCountText: { fontSize: 13, fontWeight: '600', color: TEAL },
   tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   tag: {
     backgroundColor: TAG_BG,

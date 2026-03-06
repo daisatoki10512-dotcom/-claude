@@ -7,6 +7,7 @@ export type AIInsight = {
 };
 
 export type AIAnalysisResult = {
+  summaryTitle: string;      // 20文字以内の記録内容要約タイトル
   moodLabel: string;         // e.g. "悪い気分"
   moodType: 'positive' | 'neutral' | 'negative';
   detail: string[];          // 2-3 paragraphs for 詳細 section

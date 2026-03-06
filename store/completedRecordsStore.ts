@@ -3,6 +3,7 @@ import { create } from 'zustand';
 export type CompletedRecord = {
   id: string;
   date: Date;
+  summaryTitle: string;
   moodLabel: string;
   moodType: 'positive' | 'neutral' | 'negative';
   eventText: string;
@@ -11,11 +12,13 @@ export type CompletedRecord = {
   eventChips: string[];
   tags: string[];
   bookmarkCount: number;
+  bookmarked: boolean;
 };
 
 type CompletedRecordsState = {
   records: CompletedRecord[];
-  addRecord: (record: Omit<CompletedRecord, 'id' | 'date' | 'bookmarkCount'>) => void;
+  addRecord: (record: Omit<CompletedRecord, 'id' | 'date' | 'bookmarkCount' | 'bookmarked'>) => void;
+  toggleBookmark: (id: string) => void;
   clearToday: () => void;
 };
 
@@ -30,9 +33,17 @@ export const useCompletedRecordsStore = create<CompletedRecordsState>((set) => (
           id: Date.now().toString(),
           date: new Date(),
           bookmarkCount: 0,
+          bookmarked: false,
         },
         ...state.records,
       ],
+    })),
+
+  toggleBookmark: (id) =>
+    set((state) => ({
+      records: state.records.map((r) =>
+        r.id === id ? { ...r, bookmarked: !r.bookmarked } : r
+      ),
     })),
 
   clearToday: () =>
