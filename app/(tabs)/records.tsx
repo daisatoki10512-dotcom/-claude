@@ -229,20 +229,20 @@ const styles = StyleSheet.create({
   },
   entryCard: {
     backgroundColor: CARD_BG,
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 16,
+    gap: 8,
     marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 16,
     elevation: 2,
   },
   entryHeader: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 10,
-    marginBottom: 10,
   },
   moodCircle: {
     width: 48,
@@ -264,7 +264,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: TEXT_SECONDARY,
     lineHeight: 20,
-    marginBottom: 10,
   },
   aiCountBadge: {
     flexDirection: 'row',
@@ -275,7 +274,6 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    marginBottom: 8,
   },
   aiCountIcon: {
     width: 18,
@@ -286,7 +284,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   aiCountText: { fontSize: 13, fontWeight: '600', color: TEAL },
-  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
+  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   tag: {
     backgroundColor: TAG_BG,
     borderRadius: 50,

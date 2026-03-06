@@ -361,20 +361,20 @@ const styles = StyleSheet.create({
   // Today's record card
   recordCard: {
     backgroundColor: CARD_BG,
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 16,
+    gap: 8,
     marginBottom: 28,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 16,
     elevation: 2,
   },
   recordTopRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 12,
-    marginBottom: 10,
   },
   moodCircle: {
     width: 48,
@@ -396,7 +396,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: TEXT_PRI,
     lineHeight: 22,
-    marginBottom: 10,
   },
   bookmarkBadge: {
     flexDirection: 'row',
@@ -407,7 +406,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     alignSelf: 'flex-start',
-    marginBottom: 10,
   },
   bookmarkBadgeText: {
     fontSize: 13,
@@ -418,7 +416,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    marginBottom: 10,
   },
   chip: {
     borderWidth: 1,
