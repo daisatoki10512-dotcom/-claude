@@ -18,6 +18,7 @@ const TEXT_PRI  = '#1A1A1A';
 const TEXT_SEC  = '#6B7280';
 const TEAL      = '#14CBB4';
 const TEAL_DARK = '#134E4A';
+const INPUT_ID  = 'desire-input';
 
 export default function DesireScreen() {
   const [text, setText] = useState('');
@@ -30,51 +31,58 @@ export default function DesireScreen() {
   }, []));
 
   return (
-    <View style={styles.root}>
-      <SafeAreaView style={styles.safe}>
-        <RecordHeader current={5} />
+    <>
+      <View style={styles.root}>
+        <SafeAreaView style={styles.safe}>
+          <RecordHeader current={5} />
 
-        <View style={styles.content}>
-          <Text style={styles.title}>本当は{'\n'}どうしたかったですか？</Text>
-          <Text style={styles.subtitle}>
-            ここで本音を吐き出すことが、{'\n'}モヤモヤを解消する一番の近道です。{'\n'}「〜すべき」は一旦忘れましょう。
-          </Text>
+          <View style={styles.content}>
+            <Text style={styles.title}>本当は{'\n'}どうしたかったですか？</Text>
+            <Text style={styles.subtitle}>
+              ここで本音を吐き出すことが、{'\n'}モヤモヤを解消する一番の近道です。{'\n'}「〜すべき」は一旦忘れましょう。
+            </Text>
 
-          <TextInput
-            ref={inputRef}
-            style={styles.textarea}
-            placeholder={'例：「本当はもっと頼りたかった」「ただ話\nを聞いてほしかった」'}
-            placeholderTextColor={TEXT_SEC}
-            value={text}
-            onChangeText={setText}
-            multiline
-            textAlignVertical="top"
-            inputAccessoryViewID="nobar"
-          />
-          {Platform.OS === 'ios' && <InputAccessoryView nativeID="nobar" />}
+            <TextInput
+              ref={inputRef}
+              style={styles.textarea}
+              placeholder={'例：「本当はもっと頼りたかった」「ただ話\nを聞いてほしかった」'}
+              placeholderTextColor={TEXT_SEC}
+              value={text}
+              onChangeText={setText}
+              multiline
+              textAlignVertical="top"
+              inputAccessoryViewID={INPUT_ID}
+            />
 
-          <View style={styles.buttonWrap}>
-            <TouchableOpacity
-              disabled={!canNext}
-              activeOpacity={0.85}
-              onPress={() => { setDesire(text); router.push('/record/analyzing'); }}
-              style={styles.nextBtnWrapper}
-            >
-              <LinearGradient
-                colors={canNext ? [TEAL_DARK, TEAL] : ['#E5E7EB', '#E5E7EB']}
-                style={styles.nextBtn}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
+            <View style={styles.buttonWrap}>
+              <TouchableOpacity
+                disabled={!canNext}
+                activeOpacity={0.85}
+                onPress={() => { setDesire(text); router.push('/record/analyzing'); }}
+                style={styles.nextBtnWrapper}
               >
-                <Text style={[styles.nextBtnText, !canNext && styles.nextBtnTextDisabled]}>
-                  次へ
-                </Text>
-              </LinearGradient>
-            </TouchableOpacity>
+                <LinearGradient
+                  colors={canNext ? [TEAL_DARK, TEAL] : ['#E5E7EB', '#E5E7EB']}
+                  style={styles.nextBtn}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                >
+                  <Text style={[styles.nextBtnText, !canNext && styles.nextBtnTextDisabled]}>
+                    次へ
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </SafeAreaView>
-    </View>
+        </SafeAreaView>
+      </View>
+
+      {Platform.OS === 'ios' && (
+        <InputAccessoryView nativeID={INPUT_ID}>
+          <View style={styles.emptyAccessory} />
+        </InputAccessoryView>
+      )}
+    </>
   );
 }
 
@@ -116,6 +124,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 1,
+  },
+  emptyAccessory: {
+    height: 0,
   },
   buttonWrap: {
     marginTop: 32,
