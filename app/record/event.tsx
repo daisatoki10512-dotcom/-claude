@@ -18,6 +18,7 @@ const TEXT_PRI  = '#1A1A1A';
 const TEXT_SEC  = '#6B7280';
 const TEAL      = '#14CBB4';
 const TEAL_DARK = '#134E4A';
+const INPUT_ID  = 'event-input';
 
 export default function EventScreen() {
   const [text, setText] = useState('');
@@ -25,51 +26,58 @@ export default function EventScreen() {
   const setEvent = useRecordStore(s => s.setEvent);
 
   return (
-    <View style={styles.root}>
-      <SafeAreaView style={styles.safe}>
-        <RecordHeader current={3} />
+    <>
+      <View style={styles.root}>
+        <SafeAreaView style={styles.safe}>
+          <RecordHeader current={3} />
 
-        <View style={styles.content}>
-          <Text style={styles.title}>どんな出来事があったか{'\n'}振り返ってみましょう</Text>
-          <Text style={styles.subtitle}>
-            そのとき何があったのかを整理すると{'\n'}気分の流れがつかみやすくなります。
-          </Text>
+          <View style={styles.content}>
+            <Text style={styles.title}>どんな出来事があったか{'\n'}振り返ってみましょう</Text>
+            <Text style={styles.subtitle}>
+              そのとき何があったのかを整理すると{'\n'}気分の流れがつかみやすくなります。
+            </Text>
 
-          <TextInput
-            style={styles.textarea}
-            placeholder="どんな出来事があったか記載してください。"
-            placeholderTextColor={TEXT_SEC}
-            value={text}
-            onChangeText={setText}
-            multiline
-            textAlignVertical="top"
-            autoFocus
-            inputAccessoryViewID="nobar"
-          />
-          {Platform.OS === 'ios' && <InputAccessoryView nativeID="nobar" />}
+            <TextInput
+              style={styles.textarea}
+              placeholder="どんな出来事があったか記載してください。"
+              placeholderTextColor={TEXT_SEC}
+              value={text}
+              onChangeText={setText}
+              multiline
+              textAlignVertical="top"
+              autoFocus
+              inputAccessoryViewID={INPUT_ID}
+            />
 
-          <View style={styles.buttonWrap}>
-            <TouchableOpacity
-              disabled={!canNext}
-              activeOpacity={0.85}
-              onPress={() => { setEvent(text); router.push('/record/thought'); }}
-              style={styles.nextBtnWrapper}
-            >
-              <LinearGradient
-                colors={canNext ? [TEAL_DARK, TEAL] : ['#E5E7EB', '#E5E7EB']}
-                style={styles.nextBtn}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
+            <View style={styles.buttonWrap}>
+              <TouchableOpacity
+                disabled={!canNext}
+                activeOpacity={0.85}
+                onPress={() => { setEvent(text); router.push('/record/thought'); }}
+                style={styles.nextBtnWrapper}
               >
-                <Text style={[styles.nextBtnText, !canNext && styles.nextBtnTextDisabled]}>
-                  次へ
-                </Text>
-              </LinearGradient>
-            </TouchableOpacity>
+                <LinearGradient
+                  colors={canNext ? [TEAL_DARK, TEAL] : ['#E5E7EB', '#E5E7EB']}
+                  style={styles.nextBtn}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                >
+                  <Text style={[styles.nextBtnText, !canNext && styles.nextBtnTextDisabled]}>
+                    次へ
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </SafeAreaView>
-    </View>
+        </SafeAreaView>
+      </View>
+
+      {Platform.OS === 'ios' && (
+        <InputAccessoryView nativeID={INPUT_ID}>
+          <View style={styles.emptyAccessory} />
+        </InputAccessoryView>
+      )}
+    </>
   );
 }
 
@@ -111,6 +119,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 1,
+  },
+  emptyAccessory: {
+    height: 0,
   },
   buttonWrap: {
     marginTop: 32,
