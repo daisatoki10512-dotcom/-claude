@@ -5,6 +5,8 @@ import {
   TouchableOpacity,
   TextInput,
   SafeAreaView,
+  InputAccessoryView,
+  Platform,
 } from 'react-native';
 import { useState } from 'react';
 import { router } from 'expo-router';
@@ -42,7 +44,9 @@ export default function EventScreen() {
             multiline
             textAlignVertical="top"
             autoFocus
+            inputAccessoryViewID="nobar"
           />
+          {Platform.OS === 'ios' && <InputAccessoryView nativeID="nobar" />}
 
           <View style={styles.buttonWrap}>
             <TouchableOpacity
@@ -99,7 +103,7 @@ const styles = StyleSheet.create({
     borderColor: '#D1D5DB',
     paddingHorizontal: 16,
     paddingVertical: 16,
-    fontSize: 15,
+    fontSize: 16,
     color: TEXT_PRI,
     height: 100,
     shadowColor: '#000',
