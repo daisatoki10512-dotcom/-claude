@@ -58,30 +58,31 @@ export default function BookmarksScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* ヘッダー */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.searchBtn} activeOpacity={0.7}>
-          <Ionicons name="search" size={22} color={TEXT_PRIMARY} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>ブックマーク</Text>
-        <View style={styles.headerRight} />
-      </View>
+      {/* 上部固定: ヘッダー + タブ */}
+      <View style={styles.stickyHeader}>
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.searchBtn} activeOpacity={0.7}>
+            <Ionicons name="search" size={22} color={TEXT_PRIMARY} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>ブックマーク</Text>
+          <View style={styles.headerRight} />
+        </View>
 
-      {/* タブ切り替え */}
-      <View style={styles.tabContainer}>
-        <View style={styles.tabBar}>
-          {TABS.map((tab, i) => (
-            <TouchableOpacity
-              key={i}
-              style={[styles.tabItem, activeTab === i && styles.tabItemActive]}
-              onPress={() => setActiveTab(i)}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.tabText, activeTab === i && styles.tabTextActive]}>
-                {tab}
-              </Text>
-            </TouchableOpacity>
-          ))}
+        <View style={styles.tabContainer}>
+          <View style={styles.tabBar}>
+            {TABS.map((tab, i) => (
+              <TouchableOpacity
+                key={i}
+                style={[styles.tabItem, activeTab === i && styles.tabItemActive]}
+                onPress={() => setActiveTab(i)}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.tabText, activeTab === i && styles.tabTextActive]}>
+                  {tab}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       </View>
 
@@ -164,20 +165,26 @@ export default function BookmarksScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: BG },
-
+  stickyHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    backgroundColor: BG,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 12,
-    backgroundColor: BG,
   },
   searchBtn: { width: 36 },
   headerTitle: { fontSize: 17, fontWeight: '700', color: TEXT_PRIMARY },
   headerRight: { width: 36 },
 
-  tabContainer: { paddingHorizontal: 20, marginBottom: 16 },
+  tabContainer: { paddingHorizontal: 20, paddingBottom: 16 },
   tabBar: {
     flexDirection: 'row',
     backgroundColor: '#E5E7EB',
@@ -205,7 +212,7 @@ const styles = StyleSheet.create({
   tabTextActive: { color: TEXT_PRIMARY, fontWeight: '600' },
 
   scrollView: { flex: 1, backgroundColor: BG },
-  scrollContent: { paddingHorizontal: 20 },
+  scrollContent: { paddingHorizontal: 20, paddingTop: 106 },
 
   emptyState: {
     alignItems: 'center',
