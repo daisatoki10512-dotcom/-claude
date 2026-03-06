@@ -74,19 +74,22 @@ export default function InsightsScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.horizontalScroll}
           style={styles.horizontalScrollView}
+          snapToInterval={CARD_WIDTH + 12}
+          snapToAlignment="start"
+          decelerationRate="fast"
         >
           {newInsights.map((item) => (
             <TouchableOpacity
               key={item.id}
-              style={[styles.insightCard, { width: CARD_WIDTH }]}
+              style={[styles.insightCard, { width: CARD_WIDTH, backgroundColor: item.bg }]}
               activeOpacity={0.9}
             >
               {/* イラスト背景 */}
               <View style={[styles.insightIllustration, { backgroundColor: item.bg }]}>
                 <Text style={styles.insightIllustrationText}>{item.illustrationText}</Text>
               </View>
-              {/* テキスト部分 */}
-              <View style={[styles.insightCardBody, { backgroundColor: item.bg + '22' }]}>
+              {/* テキスト部分: 半透明白で背景色が透けて見える */}
+              <View style={styles.insightCardBody}>
                 <Text style={styles.insightCardTitle}>{item.title}</Text>
                 <Text style={styles.insightCardDesc}>{item.description}</Text>
               </View>
@@ -189,7 +192,7 @@ const styles = StyleSheet.create({
     fontSize: 80,
   },
   insightCardBody: {
-    backgroundColor: CARD_BG,
+    backgroundColor: 'rgba(255,255,255,0.82)',
     padding: 16,
   },
   insightCardTitle: {
