@@ -16,49 +16,17 @@ import { LinearGradient } from 'expo-linear-gradient';
 import RecordHeader, { SCREEN_BG } from '../../components/RecordHeader';
 import { useRecordStore } from '../../store/recordStore';
 import { useCompletedRecordsStore } from '../../store/completedRecordsStore';
+import SelectChip from '../../components/SelectChip';
 
 // ── Colors ────────────────────────────────────────────
-const BG_TOP    = '#E5F5EF';
-const BG_BOT    = '#DDF0E8';
 const TEXT_PRI  = '#1A1A1A';
 const TEXT_SEC  = '#6B7280';
-const TEAL      = '#0F766E';
-const TEAL_DARK = '#134E4A';
 const WHITE     = '#FFFFFF';
 
 const TOTAL_STEPS = 8;
 const CURRENT     = 8;
 
 const SUGGESTED_TAGS = ['理不尽', '人間関係', '仕事', '不安'];
-
-// ── Tag chip ──────────────────────────────────────────
-function TagChip({
-  label,
-  selected,
-  onPress,
-}: {
-  label: string;
-  selected: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.75}
-      style={[styles.chip, selected && styles.chipSelected]}
-    >
-      <Ionicons
-        name="pricetag"
-        size={13}
-        color={selected ? TEAL : TEXT_PRI}
-        style={{ marginRight: 4 }}
-      />
-      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
-}
 
 // ── Main Screen ───────────────────────────────────────
 export default function TaggingScreen() {
@@ -127,7 +95,7 @@ export default function TaggingScreen() {
             <Text style={styles.sectionLabel}>おすすめのタグ</Text>
             <View style={styles.chipRow}>
               {SUGGESTED_TAGS.map((tag) => (
-                <TagChip
+                <SelectChip
                   key={tag}
                   label={tag}
                   selected={selectedTags.includes(tag)}
@@ -162,7 +130,7 @@ export default function TaggingScreen() {
                 {selectedTags
                   .filter((t) => !SUGGESTED_TAGS.includes(t))
                   .map((tag) => (
-                    <TagChip
+                    <SelectChip
                       key={tag}
                       label={tag}
                       selected
@@ -240,29 +208,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 10,
     marginBottom: 20,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: '#D1D5DB',
-    borderRadius: 50,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    backgroundColor: WHITE,
-  },
-  chipSelected: {
-    borderColor: TEAL,
-    backgroundColor: WHITE,
-  },
-  chipText: {
-    fontSize: 14,
-    color: TEXT_PRI,
-    fontWeight: '500',
-  },
-  chipTextSelected: {
-    color: TEAL,
-    fontWeight: '600',
   },
 
   // Input row

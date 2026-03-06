@@ -16,23 +16,15 @@ import { useRecordStore } from '../../store/recordStore';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import RecordHeader, { SCREEN_BG } from '../../components/RecordHeader';
+import SelectChip from '../../components/SelectChip';
 
 if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
 }
 
 // ── Colors ────────────────────────────────────────────
-const BG_TOP          = '#E5F5EF';
-const BG_BOT          = '#DDF0E8';
 const TEXT_PRI        = '#1A1A1A';
 const TEXT_SEC        = '#6B7280';
-const TEAL            = '#0F766E';
-const TEAL_DARK       = '#134E4A';
-const CHIP_DEF_BG     = '#FFFFFF';
-const CHIP_DEF_BORDER = '#E5E7EB';
-const CHIP_SEL_BG     = '#FFFFFF';
-const CHIP_SEL_BORDER = TEAL;
-const CHIP_SEL_TEXT   = TEAL;
 
 const TOTAL_STEPS = 8;
 
@@ -79,31 +71,6 @@ const CATEGORIES: Category[] = [
 
 // ── Sub-components ────────────────────────────────────
 
-function ReasonChip({
-  label,
-  selected,
-  onPress,
-}: {
-  label: string;
-  selected: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <TouchableOpacity
-      style={[styles.chip, selected ? styles.chipSelected : styles.chipDefault]}
-      onPress={onPress}
-      activeOpacity={0.75}
-    >
-      {selected && (
-        <Ionicons name="checkmark" size={14} color={CHIP_SEL_TEXT} style={styles.chipCheck} />
-      )}
-      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
-}
-
 function CategoryAccordion({
   category,
   isOpen,
@@ -139,7 +106,7 @@ function CategoryAccordion({
         <View style={styles.accordionBody}>
           <View style={styles.chipRow}>
             {category.items.map(item => (
-              <ReasonChip
+              <SelectChip
                 key={item}
                 label={item}
                 selected={selectedItems.has(item)}
@@ -324,36 +291,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-  },
-
-  // Chips
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 9,
-    borderRadius: 50,
-    borderWidth: 1.5,
-  },
-  chipDefault: {
-    backgroundColor: CHIP_DEF_BG,
-    borderColor: CHIP_DEF_BORDER,
-  },
-  chipSelected: {
-    backgroundColor: CHIP_SEL_BG,
-    borderColor: CHIP_SEL_BORDER,
-  },
-  chipCheck: {
-    marginRight: 4,
-  },
-  chipText: {
-    fontSize: 14,
-    color: TEXT_PRI,
-    fontWeight: '500',
-  },
-  chipTextSelected: {
-    color: CHIP_SEL_TEXT,
-    fontWeight: '600',
   },
 
   // Or separator
