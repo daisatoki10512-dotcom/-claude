@@ -30,7 +30,7 @@ const SUGGESTED_TAGS = ['理不尽', '人間関係', '仕事', '不安'];
 
 // ── Main Screen ───────────────────────────────────────
 export default function TaggingScreen() {
-  const { aiResult, eventText, setTags, reset } = useRecordStore();
+  const { aiResult, eventText, emotions, setTags, reset } = useRecordStore();
   const { addRecord } = useCompletedRecordsStore();
 
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -53,17 +53,15 @@ export default function TaggingScreen() {
 
   const handleComplete = () => {
     setTags(selectedTags);
-    if (aiResult) {
-      addRecord({
-        moodLabel: aiResult.moodLabel,
-        moodType: aiResult.moodType,
-        eventText,
-        detail: aiResult.detail,
-        emotionChips: aiResult.emotionChips,
-        eventChips: aiResult.eventChips,
-        tags: selectedTags,
-      });
-    }
+    addRecord({
+      moodLabel: aiResult?.moodLabel ?? '記録済み',
+      moodType: aiResult?.moodType ?? 'neutral',
+      eventText,
+      detail: aiResult?.detail ?? [],
+      emotionChips: aiResult?.emotionChips ?? emotions,
+      eventChips: aiResult?.eventChips ?? [],
+      tags: selectedTags,
+    });
     reset();
     router.push('/record/complete');
   };
