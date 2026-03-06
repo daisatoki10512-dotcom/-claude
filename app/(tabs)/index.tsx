@@ -55,17 +55,17 @@ const MOOD_FACE_TYPE: Record<CompletedRecord['moodType'], FaceType> = {
 // ── Today's record card ────────────────────────────────
 function TodayRecordCard({ record, onToggleBookmark }: { record: CompletedRecord; onToggleBookmark: () => void }) {
   const faceType = MOOD_FACE_TYPE[record.moodType];
-  const previewText = record.detail[0] || record.eventText;
-  const allChips = [...record.emotionChips, ...record.eventChips];
+  const bodyText = record.detail[0] ?? '';
+  const categoryChips = [...record.emotionChips, ...record.eventChips];
 
   return (
     <View style={styles.recordCard}>
-      {/* Top row: mood icon + title + bookmark */}
+      {/* Top row: mood icon + AI summary title + bookmark */}
       <View style={styles.recordTopRow}>
         <FaceIcon type={faceType} active size={48} />
 
-        <Text style={styles.recordTitle} numberOfLines={3}>
-          {record.eventText || record.moodLabel}
+        <Text style={styles.recordTitle} numberOfLines={2}>
+          {record.summaryTitle}
         </Text>
 
         <TouchableOpacity hitSlop={12} onPress={onToggleBookmark}>
@@ -77,23 +77,15 @@ function TodayRecordCard({ record, onToggleBookmark }: { record: CompletedRecord
         </TouchableOpacity>
       </View>
 
-      {/* Detail preview */}
-      {!!previewText && (
-        <Text style={styles.recordBody} numberOfLines={3}>{previewText}</Text>
+      {/* AI body text (3 lines max) */}
+      {!!bodyText && (
+        <Text style={styles.recordBody} numberOfLines={3}>{bodyText}</Text>
       )}
 
-      {/* AI chat count badge */}
-      {record.bookmarkCount > 0 && (
-        <View style={styles.bookmarkBadge}>
-          <Ionicons name="person" size={13} color="#FFFFFF" />
-          <Text style={styles.bookmarkBadgeText}>{record.bookmarkCount}</Text>
-        </View>
-      )}
-
-      {/* Emotion + event chips */}
-      {allChips.length > 0 && (
+      {/* Category chips: emotions + event categories */}
+      {categoryChips.length > 0 && (
         <View style={styles.chipRow}>
-          {allChips.map((chip) => (
+          {categoryChips.map((chip) => (
             <View key={chip} style={styles.chip}>
               <Text style={styles.chipText}>{chip}</Text>
             </View>

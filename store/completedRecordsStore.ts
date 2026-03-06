@@ -3,6 +3,7 @@ import { create } from 'zustand';
 export type CompletedRecord = {
   id: string;
   date: Date;
+  summaryTitle: string;
   moodLabel: string;
   moodType: 'positive' | 'neutral' | 'negative';
   eventText: string;

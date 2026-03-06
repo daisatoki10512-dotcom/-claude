@@ -101,16 +101,16 @@ export default function BookmarksScreen() {
               <Text style={styles.dateHeader}>{group.label}</Text>
               {group.records.map((record) => {
                 const faceType = MOOD_FACE_TYPE[record.moodType];
-                const previewText = record.detail[0] ?? '';
-                const allChips = [...record.emotionChips, ...record.eventChips];
+                const bodyText = record.detail[0] ?? '';
+                const categoryChips = [...record.emotionChips, ...record.eventChips];
 
                 return (
                   <View key={record.id} style={styles.entryCard}>
-                    {/* ヘッダー行 */}
+                    {/* ヘッダー行: 顔アイコン + AIサマリータイトル + ブックマーク */}
                     <View style={styles.entryHeader}>
                       <FaceIcon type={faceType} active size={48} />
                       <Text style={styles.entryTitle} numberOfLines={2}>
-                        {record.eventText || record.moodLabel}
+                        {record.summaryTitle}
                       </Text>
                       <TouchableOpacity
                         hitSlop={12}
@@ -120,17 +120,17 @@ export default function BookmarksScreen() {
                       </TouchableOpacity>
                     </View>
 
-                    {/* 本文 */}
-                    {!!previewText && (
+                    {/* 本文: AIの振り返り文（3行まで） */}
+                    {!!bodyText && (
                       <Text style={styles.entryDescription} numberOfLines={3}>
-                        {previewText}
+                        {bodyText}
                       </Text>
                     )}
 
-                    {/* 感情チップ */}
-                    {allChips.length > 0 && (
+                    {/* カテゴリ: 感情 + 出来事カテゴリ */}
+                    {categoryChips.length > 0 && (
                       <View style={styles.tagsRow}>
-                        {allChips.map((chip) => (
+                        {categoryChips.map((chip) => (
                           <View key={chip} style={styles.tag}>
                             <Text style={styles.tagText}>{chip}</Text>
                           </View>
