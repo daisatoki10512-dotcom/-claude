@@ -6,7 +6,7 @@ import {
   TextInput,
   SafeAreaView,
 } from 'react-native';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { router } from 'expo-router';
 import { useRecordStore } from '../../store/recordStore';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -21,6 +21,11 @@ export default function ThoughtScreen() {
   const [text, setText] = useState('');
   const canNext = text.trim().length > 0;
   const setThought = useRecordStore(s => s.setThought);
+  const inputRef = useRef<TextInput>(null);
+  useEffect(() => {
+    const t = setTimeout(() => inputRef.current?.focus(), 300);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
     <View style={styles.root}>
@@ -34,6 +39,7 @@ export default function ThoughtScreen() {
           </Text>
 
           <TextInput
+            ref={inputRef}
             style={styles.textarea}
             placeholder="例：自分は嫌われているのかと思った。"
             placeholderTextColor={TEXT_SEC}
@@ -41,7 +47,6 @@ export default function ThoughtScreen() {
             onChangeText={setText}
             multiline
             textAlignVertical="top"
-            autoFocus
           />
 
           <View style={styles.buttonWrap}>
@@ -101,7 +106,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     fontSize: 15,
     color: TEXT_PRI,
-    height: 160,
+    height: 100,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
