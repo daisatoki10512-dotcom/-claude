@@ -5,8 +5,6 @@ import {
   TouchableOpacity,
   TextInput,
   SafeAreaView,
-  KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
 import { useState } from 'react';
 import { router } from 'expo-router';
@@ -25,10 +23,7 @@ export default function ThoughtScreen() {
   const setThought = useRecordStore(s => s.setThought);
 
   return (
-    <KeyboardAvoidingView
-      style={styles.root}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+    <View style={styles.root}>
       <SafeAreaView style={styles.safe}>
         <RecordHeader current={4} />
 
@@ -48,29 +43,29 @@ export default function ThoughtScreen() {
             textAlignVertical="top"
             autoFocus
           />
-        </View>
 
-        <View style={styles.footer}>
-          <TouchableOpacity
-            disabled={!canNext}
-            activeOpacity={0.85}
-            onPress={() => { setThought(text); router.push('/record/desire'); }}
-            style={styles.nextBtnWrapper}
-          >
-            <LinearGradient
-              colors={canNext ? [TEAL_DARK, TEAL] : ['#E5E7EB', '#E5E7EB']}
-              style={styles.nextBtn}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
+          <View style={styles.buttonWrap}>
+            <TouchableOpacity
+              disabled={!canNext}
+              activeOpacity={0.85}
+              onPress={() => { setThought(text); router.push('/record/desire'); }}
+              style={styles.nextBtnWrapper}
             >
-              <Text style={[styles.nextBtnText, !canNext && styles.nextBtnTextDisabled]}>
-                次へ
-              </Text>
-            </LinearGradient>
-          </TouchableOpacity>
+              <LinearGradient
+                colors={canNext ? [TEAL_DARK, TEAL] : ['#E5E7EB', '#E5E7EB']}
+                style={styles.nextBtn}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+              >
+                <Text style={[styles.nextBtnText, !canNext && styles.nextBtnTextDisabled]}>
+                  次へ
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
         </View>
       </SafeAreaView>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -79,7 +74,6 @@ const styles = StyleSheet.create({
   safe: { flex: 1 },
 
   content: {
-    flex: 1,
     paddingHorizontal: 20,
     paddingTop: 16,
   },
@@ -114,11 +108,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 1,
   },
-
-  footer: {
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    paddingTop: 8,
+  buttonWrap: {
+    marginTop: 32,
   },
   nextBtnWrapper: {
     borderRadius: 20,
