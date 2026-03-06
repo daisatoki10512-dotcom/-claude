@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import FaceIcon, { FaceType } from '../../components/ui/FaceIcon';
 import { useCompletedRecordsStore, CompletedRecord } from '../../store/completedRecordsStore';
+import { BookmarkIcon, TagIcon } from '../../components/ui/AppIcons';
 
 const BG = '#E5F5EF';
 const CARD_BG = '#FFFFFF';
@@ -114,11 +115,7 @@ export default function RecordsScreen() {
                         hitSlop={12}
                         onPress={() => toggleBookmark(record.id)}
                       >
-                        <Ionicons
-                          name={record.bookmarked ? 'bookmark' : 'bookmark-outline'}
-                          size={22}
-                          color={record.bookmarked ? TEAL : '#C0C8D0'}
-                        />
+                        <BookmarkIcon size={22} color={record.bookmarked ? TEAL : '#C0C8D0'} />
                       </TouchableOpacity>
                     </View>
 
@@ -145,7 +142,7 @@ export default function RecordsScreen() {
                       <View style={styles.markersRow}>
                         {record.tags.map((tag) => (
                           <View key={tag} style={styles.markerItem}>
-                            <Ionicons name="pricetag" size={11} color={TEAL} />
+                            <TagIcon size={11} color={TEAL} />
                             <Text style={styles.markerText}>{tag}</Text>
                           </View>
                         ))}

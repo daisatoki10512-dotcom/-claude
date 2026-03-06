@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import FaceIcon, { FaceType } from '../../components/ui/FaceIcon';
 import { useCompletedRecordsStore, CompletedRecord } from '../../store/completedRecordsStore';
+import { BookmarkIcon, TagIcon, PenIcon } from '../../components/ui/AppIcons';
 
 const { width } = Dimensions.get('window');
 
@@ -69,11 +70,7 @@ function TodayRecordCard({ record, onToggleBookmark }: { record: CompletedRecord
         </Text>
 
         <TouchableOpacity hitSlop={12} onPress={onToggleBookmark}>
-          <Ionicons
-            name={record.bookmarked ? 'bookmark' : 'bookmark-outline'}
-            size={20}
-            color={record.bookmarked ? TEAL : TEXT_SEC}
-          />
+          <BookmarkIcon size={20} color={record.bookmarked ? TEAL : TEXT_SEC} />
         </TouchableOpacity>
       </View>
 
@@ -98,7 +95,7 @@ function TodayRecordCard({ record, onToggleBookmark }: { record: CompletedRecord
         <View style={styles.tagRow}>
           {record.tags.map((tag) => (
             <View key={tag} style={styles.tagItem}>
-              <Ionicons name="pricetag" size={12} color={TEAL} style={{ marginRight: 3 }} />
+              <TagIcon size={12} color={TEAL} />
               <Text style={styles.tagText}>{tag}</Text>
             </View>
           ))}
