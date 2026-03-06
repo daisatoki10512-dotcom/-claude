@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
 
   pageTitle: {
     fontSize: 17,
-    fontWeight: '600',
+    fontWeight: '700',
     color: TEXT_PRIMARY,
     textAlign: 'center',
     marginBottom: 24,

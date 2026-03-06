@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
     backgroundColor: BG,
   },
   searchBtn: { width: 36 },
-  headerTitle: { fontSize: 17, fontWeight: '600', color: TEXT_PRIMARY },
+  headerTitle: { fontSize: 17, fontWeight: '700', color: TEXT_PRIMARY },
   headerRight: { width: 36 },
 
   tabContainer: { paddingHorizontal: 20, marginBottom: 16 },
