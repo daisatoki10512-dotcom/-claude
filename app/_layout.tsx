@@ -20,14 +20,13 @@ export default function RootLayout() {
           options={{
             headerShown: false,
             presentation: 'modal',
-            animation: 'slide_from_bottom',
           }}
         />
         <Stack.Screen
           name="record/reason"
           options={{
             headerShown: false,
-            presentation: 'modal',
+            presentation: 'card',
             animation: 'slide_from_right',
           }}
         />
@@ -59,7 +58,7 @@ export default function RootLayout() {
           name="record/analyzing"
           options={{
             headerShown: false,
-            presentation: 'modal',
+            presentation: 'card',
             animation: 'fade',
           }}
         />
@@ -67,7 +66,7 @@ export default function RootLayout() {
           name="record/summary"
           options={{
             headerShown: false,
-            presentation: 'modal',
+            presentation: 'card',
             animation: 'fade',
           }}
         />
@@ -75,7 +74,7 @@ export default function RootLayout() {
           name="record/tagging"
           options={{
             headerShown: false,
-            presentation: 'modal',
+            presentation: 'card',
             animation: 'slide_from_right',
           }}
         />
@@ -83,7 +82,7 @@ export default function RootLayout() {
           name="record/complete"
           options={{
             headerShown: false,
-            presentation: 'modal',
+            presentation: 'card',
             animation: 'fade',
           }}
         />
